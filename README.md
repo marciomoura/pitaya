@@ -1,79 +1,10 @@
 # 🐉 Pitaya
 
-A high-performance C++20 control systems library for modern engineering and power electronics applications.
-
 ---
 
-**Pitaya** is designed to bridge the gap between abstract control theory and real-world embedded implementation. It provides a suite of numerically stable, type-safe, and ready-to-use components ranging from basic signal conditioning to advanced grid synchronization algorithms.
+**Pitaya** is designed to bridge the gap between abstract control theory and real-world embedded implementation. It provides a suite of components for basic signal processing and controls for power electronic applications.
 
-Built on top of [🍸 Mojito](https://github.com/marciomoura/mojito), Pitaya leverages advanced metaprogramming to ensure physical units and coordinate frame consistency at compile-time.
-
-## ✨ Features
-
-- **🛡️ Type-Safe Control:** Native support for physical quantities (Voltage, Current, Frequency) and coordinate frames (ABC, Alpha-Beta, DQ).
-- **📈 Advanced Filters:** Includes first/second-order filters, adaptive notch filters, and SOGI-based sequence extractors.
-- **⚡ Grid Synchronization:** Production-ready SRF-PLL and Dual-SOGI PLL implementations.
-- **🧱 Building Blocks:** Robust logic handlers (debouncers, edge detectors) and math utilities (ramps, limiters, integrators).
-- **🎯 Performance Oriented:** Zero-allocation algorithms, optimized for real-time control loops.
-- **🧪 Fully Verified:** Comprehensive unit test suite with 180+ tests passing on every build.
-
----
-
-## 🛡️ Technical Showcase
-
-### 1. Robust PI Control
-Configuring and updating a PI controller is concise and type-safe.
-
-```cpp
-#include <pitaya/pi_controller.hpp>
-
-// Define a controller with 10ms sampling time
-pitaya::pi_controller<float> speed_reg(0.01);
-
-// Configure gains: Kp = 2.0, Ti = 100ms
-speed_reg.configure_with_ti(2.0f, 0.1f);
-speed_reg.set_output_limits(-1.0f, 1.0f);
-
-// Update in the control loop
-float output = speed_reg.update(error);
-```
-
-### 2. Grid Synchronization (PLL)
-Extract grid frequency and phase using advanced Synchronous Reference Frame (SRF) PLLs.
-
-```cpp
-#include <pitaya/srf_pll.hpp>
-#include <mojito/mojito.hpp>
-
-using namespace mojito;
-
-pitaya::srf_pll pll(duration_t{50e-6f}); // 50us sampling
-pll.configure_nominal_frequency(frequency_t{60.0f});
-
-// In the ADC interrupt:
-void on_adc_ready(const abc<voltage_pu_t>& v_grid) {
-    pll.update(to_alphabeta(v_grid));
-    
-    auto freq = pll.get_estimated_frequency(); // 60.01 Hz
-    auto theta = pll.get_estimated_angle();    // Grid phase angle
-}
-```
-
-### 3. SOGI Sequence Extraction
-Filter stationary frames and extract positive sequence components even under distorted grid conditions.
-
-```cpp
-#include <pitaya/sogi_filter_sequence_extractor.hpp>
-
-pitaya::sogi_filter_sequence_extractor extractor(ts);
-extractor.configure(1.414f, duration_t{0.02f});
-
-// Update with raw alpha-beta voltages
-extractor.update(v_in_ab, grid_omega);
-
-// Get clean positive sequence
-auto v_pos = extractor.get_positive_sequence();
-```
+Pitaya uses [🍸 Mojito](https://github.com/marciomoura/mojito) as a dependency, leveraging the usage of strong-types, physical units and coordinate transformations whenever possible.
 
 ---
 
