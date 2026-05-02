@@ -22,6 +22,9 @@ add_executable(pitaya_tests
     pi_controller_test.cpp
     sogi_filter_test.cpp
     sogi_filter_sequence_extractor_test.cpp
+    srf_pll_test.cpp
+    three_phase_pll_test.cpp
+    dual_sogi_srf_pll_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
