@@ -13,6 +13,8 @@ target_sources(
     src/on_delay.cpp
     src/off_delay.cpp
     src/on_off_delay.cpp
+    src/hysteresis_limiter.cpp
+    src/rate_of_change_limiter.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -28,7 +30,12 @@ target_sources(
         include/pitaya/on_delay.hpp
         include/pitaya/off_delay.hpp
         include/pitaya/on_off_delay.hpp
-        include/pitaya/state_machine.hpp)
+        include/pitaya/state_machine.hpp
+        include/pitaya/limit.hpp
+        include/pitaya/hysteresis_limiter.hpp
+        include/pitaya/linear_ramp.hpp
+        include/pitaya/rate_of_change_limiter.hpp
+        include/pitaya/threshold_protection.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
