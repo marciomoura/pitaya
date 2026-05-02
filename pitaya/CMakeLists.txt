@@ -17,6 +17,8 @@ target_sources(
     src/rate_of_change_limiter.cpp
     src/derivative.cpp
     src/hardware_filter_compensator.cpp
+    src/sogi_filter.cpp
+    src/sogi_filter_sequence_extractor.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -43,7 +45,11 @@ target_sources(
         include/pitaya/range_kutta_derivative.hpp
         include/pitaya/first_order_low_pass_filter.hpp
         include/pitaya/second_order_filter.hpp
-        include/pitaya/hardware_filter_compensator.hpp)
+        include/pitaya/hardware_filter_compensator.hpp
+        include/pitaya/pi_controller.hpp
+        include/pitaya/adaptive_band_reject_filter.hpp
+        include/pitaya/sogi_filter.hpp
+        include/pitaya/sogi_filter_sequence_extractor.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
