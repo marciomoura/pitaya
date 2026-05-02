@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 project(
     pitaya
     VERSION 0.1.0
-    DESCRIPTION "A modular C++ library for units and math"
+    DESCRIPTION "Basic utilities for power electronics control software development"
     HOMEPAGE_URL "https://github.com/marciomoura/pitaya/"
     LANGUAGES CXX
 )
