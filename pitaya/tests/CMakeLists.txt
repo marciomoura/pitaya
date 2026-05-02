@@ -9,6 +9,11 @@ add_executable(pitaya_tests
     on_delay_test.cpp
     off_delay_test.cpp
     on_off_delay_test.cpp
+    limit_test.cpp
+    hysteresis_limiter_test.cpp
+    linear_ramp_test.cpp
+    rate_of_change_limiter_test.cpp
+    threshold_protection_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
