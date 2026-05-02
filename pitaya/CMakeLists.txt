@@ -11,4 +11,4 @@ target_sources(
     FILES 
         include/pitaya/pitaya.hpp)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE)
+target_link_libraries(${PROJECT_NAME} INTERFACE mojito::mojito)
