@@ -14,6 +14,11 @@ add_executable(pitaya_tests
     linear_ramp_test.cpp
     rate_of_change_limiter_test.cpp
     threshold_protection_test.cpp
+    derivative_test.cpp
+    integrator_test.cpp
+    first_order_low_pass_filter_test.cpp
+    second_order_filter_test.cpp
+    hardware_filter_compensator_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 

@@ -1,0 +1,64 @@
+#pragma once
+
+#include <cmath>
+#include <functional>
+
+namespace pitaya {
+
+/**
+ * @brief
+ *
+ * The Runge-Kutta 4th order method is a widely used numerical technique for solving
+ * ordinary differential equations of the form: dy/dt = f(y, t)
+ *
+ * This implementation provides a generic way to integrate any system of differential
+ * equations represented in state-space form, with accuracy of order O(h⁴).
+ */
+class range_kutta_derivative {
+public:
+    /**
+     * @brief Performs a single RK4 integration step on the given system state
+     *
+     * @tparam StateT            Type representing the full state of the system
+     * @tparam DerivativeFunc    Function type that computes state derivatives
+     * @param states             Current system state
+     * @param calculate_derivatives Function that computes state derivatives (dy/dt) given a state
+     * @param dt                 Integration time step
+     * @return StateT            Updated system state after time step dt
+     */
+    template <typename StateT, typename DerivativeFunc>
+    static StateT calculate(StateT states, DerivativeFunc calculate_derivatives, double dt)
+    {
+        // Store initial state at t_n
+        StateT states_k1 = states;
+
+        // Stage 1: Evaluate derivatives at the initial state
+        // k₁ = f(y_n)
+        auto states_derivative_k1 = calculate_derivatives(states_k1);
+
+        // Stage 2: Evaluate derivatives at the midpoint using k₁ slope
+        // k₂ = f(y_n + dt/2 · k₁)
+        StateT states_k2 = states_k1 + states_derivative_k1 * (dt / 2.0);
+        auto states_derivative_k2 = calculate_derivatives(states_k2);
+
+        // Stage 3: Evaluate derivatives at the midpoint using k₂ slope
+        // k₃ = f(y_n + dt/2 · k₂)
+        StateT states_k3 = states_k1 + states_derivative_k2 * (dt / 2.0);
+        auto states_derivative_k3 = calculate_derivatives(states_k3);
+
+        // Stage 4: Evaluate derivatives at the endpoint using k₃ slope
+        // k₄ = f(y_n + dt · k₃)
+        StateT states_k4 = states_k1 + states_derivative_k3 * dt;
+        auto states_derivative_k4 = calculate_derivatives(states_k4);
+
+        // Combine all derivatives with appropriate weights to get final update
+        // y_{n+1} = y_n + dt/6 · (k₁ + 2k₂ + 2k₃ + k₄)
+        StateT states_kp1 = states_k1 + (states_derivative_k1 + states_derivative_k2 * 2.0 +
+                                            states_derivative_k3 * 2.0 + states_derivative_k4) *
+                                            (dt / 6.0);
+
+        return states_kp1;
+    }
+};
+
+}  // namespace pitaya
