@@ -19,6 +19,9 @@ add_executable(pitaya_tests
     first_order_low_pass_filter_test.cpp
     second_order_filter_test.cpp
     hardware_filter_compensator_test.cpp
+    pi_controller_test.cpp
+    sogi_filter_test.cpp
+    sogi_filter_sequence_extractor_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
