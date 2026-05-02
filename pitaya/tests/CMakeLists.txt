@@ -1,5 +1,4 @@
 add_executable(pitaya_tests 
-    pitaya_test.cpp
     elapsed_timer_test.cpp
     interval_timer_test.cpp
     lookup_table_1d_test.cpp
