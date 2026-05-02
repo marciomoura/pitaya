@@ -15,6 +15,8 @@ target_sources(
     src/on_off_delay.cpp
     src/hysteresis_limiter.cpp
     src/rate_of_change_limiter.cpp
+    src/derivative.cpp
+    src/hardware_filter_compensator.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -35,7 +37,13 @@ target_sources(
         include/pitaya/hysteresis_limiter.hpp
         include/pitaya/linear_ramp.hpp
         include/pitaya/rate_of_change_limiter.hpp
-        include/pitaya/threshold_protection.hpp)
+        include/pitaya/threshold_protection.hpp
+        include/pitaya/derivative.hpp
+        include/pitaya/integrator.hpp
+        include/pitaya/range_kutta_derivative.hpp
+        include/pitaya/first_order_low_pass_filter.hpp
+        include/pitaya/second_order_filter.hpp
+        include/pitaya/hardware_filter_compensator.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
