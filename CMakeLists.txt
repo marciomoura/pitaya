@@ -50,6 +50,9 @@ if(PITAYA_ENABLE_CPPCHECK)
     include(cppcheck)
 endif()
 
+# Dependencies
+include(mojito)
+
 # Testing Setup
 if(PITAYA_BUILD_TESTING)
     message(STATUS "Testing enabled")
