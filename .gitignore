@@ -1,0 +1,28 @@
+# Build directories
+build*/
+build-host*/
+_deps/
+vendor/
+
+# IDEs and editors
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*.lnk
+
+# Compiler and analysis
+.cache/
+.ccache*/
+Testing/
+*.bak
+*.pdb
+*.obj
+*.exe
+*.lib
+*.a
+*.so
+*.dylib
+
+
