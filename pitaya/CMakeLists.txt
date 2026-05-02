@@ -19,6 +19,9 @@ target_sources(
     src/hardware_filter_compensator.cpp
     src/sogi_filter.cpp
     src/sogi_filter_sequence_extractor.cpp
+    src/srf_pll.cpp
+    src/three_phase_pll.cpp
+    src/dual_sogi_srf_pll.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -49,7 +52,10 @@ target_sources(
         include/pitaya/pi_controller.hpp
         include/pitaya/adaptive_band_reject_filter.hpp
         include/pitaya/sogi_filter.hpp
-        include/pitaya/sogi_filter_sequence_extractor.hpp)
+        include/pitaya/sogi_filter_sequence_extractor.hpp
+        include/pitaya/srf_pll.hpp
+        include/pitaya/three_phase_pll.hpp
+        include/pitaya/dual_sogi_srf_pll.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
