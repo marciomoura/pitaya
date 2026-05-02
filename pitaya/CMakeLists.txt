@@ -26,7 +26,6 @@ target_sources(
     FILE_SET HEADERS
     BASE_DIRS include
     FILES 
-        include/pitaya/pitaya.hpp
         include/pitaya/types.hpp
         include/pitaya/elapsed_timer.hpp
         include/pitaya/interval_timer.hpp
