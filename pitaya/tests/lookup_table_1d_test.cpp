@@ -68,3 +68,22 @@ TEST_F(LookupTable1DTest, ConfigureMethodWorks)
     EXPECT_FLOAT_EQ(table.get_value(2.5f), -25.0f);
     EXPECT_FLOAT_EQ(table.get_value(-1.0f), 0.0f);  // Clamping with new data
 }
+
+// Test that the table correctly handles unsorted input data
+TEST_F(LookupTable1DTest, HandlesUnsortedData)
+{
+    const std::array<float, NumX> unsorted_x{40.0f, 10.0f, 30.0f, 20.0f};
+    const std::array<float, NumX> unsorted_y{250.0f, 100.0f, 150.0f, 200.0f};
+    
+    pitaya::lookup_table_1d<float, NumX> table(unsorted_x, unsorted_y);
+
+    // Exact points
+    EXPECT_FLOAT_EQ(table.get_value(10.0f), 100.0f);
+    EXPECT_FLOAT_EQ(table.get_value(20.0f), 200.0f);
+    EXPECT_FLOAT_EQ(table.get_value(30.0f), 150.0f);
+    EXPECT_FLOAT_EQ(table.get_value(40.0f), 250.0f);
+
+    // Interpolation
+    EXPECT_FLOAT_EQ(table.get_value(15.0f), 150.0f);
+    EXPECT_FLOAT_EQ(table.get_value(35.0f), 200.0f);
+}
