@@ -64,7 +64,8 @@ target_sources(
         include/pitaya/simulation/simulation_task.hpp
         include/pitaya/simulation/simulator.hpp
         include/pitaya/simulation/task_scheduler.hpp
-        include/pitaya/simulation/data_exporter.hpp)
+        include/pitaya/simulation/data_exporter.hpp
+        include/pitaya/simulation/gtest_data_exporter.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 

@@ -7,6 +7,7 @@
 
 #include "pitaya/simulation/simulator.hpp"
 #include "pitaya/simulation/data_exporter.hpp"
+#include "pitaya/simulation/gtest_data_exporter.hpp"
 
 namespace pitaya {
 
@@ -144,9 +145,6 @@ TEST_F(DataExporterTest, ExportToCSV) {
     
     // Row 1: time=0, s1=1.1
     std::getline(ifs, line);
-    // CSV output might have trailing zeros or scientific notation depending on implementation.
-    // Our current implementation uses << which defaults to some precision.
-    // Let's check for "0,1.1" but be flexible if it's "0.000,1.100" etc.
     EXPECT_TRUE(line.find("0") != std::string::npos);
     EXPECT_TRUE(line.find("1.1") != std::string::npos);
 
@@ -154,6 +152,51 @@ TEST_F(DataExporterTest, ExportToCSV) {
     std::getline(ifs, line);
     EXPECT_TRUE(line.find("0.001") != std::string::npos);
     EXPECT_TRUE(line.find("1.2") != std::string::npos);
+}
+
+TEST_F(DataExporterTest, ExportToBinaryGTest) {
+    simulator sim;
+    sim.register_lambda(duration_t(0.001), []() {});
+    float s1 = 1.0f;
+    sim.register_signal("s1", [&]() { return s1; });
+    sim.initialize();
+    
+    s1 = 1.1f; sim.simulate_steps(1);
+    
+    // Use the gtest helper
+    export_to_binary_gtest(sim, temp_dir);
+    
+    std::string expected_filename = "DataExporterTest_ExportToBinaryGTest.bin";
+    std::filesystem::path expected_path = temp_dir / expected_filename;
+    
+    EXPECT_TRUE(std::filesystem::exists(expected_path));
+    
+    // Verify it's a valid pitaya binary
+    std::ifstream ifs(expected_path, std::ios::binary);
+    char magic[4];
+    ifs.read(magic, 4);
+    EXPECT_EQ(magic[0], 'P'); EXPECT_EQ(magic[1], 'T'); EXPECT_EQ(magic[2], 'Y'); EXPECT_EQ(magic[3], 'A');
+}
+
+TEST_F(DataExporterTest, GTestExporterRAII) {
+    std::string expected_filename = "DataExporterTest_GTestExporterRAII.bin";
+    std::filesystem::path expected_path = temp_dir / expected_filename;
+
+    {
+        simulator sim;
+        sim.register_lambda(duration_t(0.001), []() {});
+        sim.register_signal("s1", []() { return 1.0f; });
+        sim.initialize();
+        
+        // Instantiate the RAII exporter
+        gtest_exporter exporter(sim, temp_dir);
+        
+        sim.simulate_steps(1);
+        
+        // At the end of this block, the file should be exported
+    }
+    
+    EXPECT_TRUE(std::filesystem::exists(expected_path));
 }
 
 } // namespace pitaya
