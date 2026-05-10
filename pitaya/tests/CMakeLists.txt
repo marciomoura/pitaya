@@ -29,6 +29,7 @@ add_executable(
     simulation/simulation_task_test.cpp
     simulation/data_logger_test.cpp
     simulation/task_scheduler_test.cpp
+    simulation/data_exporter_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
