@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <chrono>
 #include <functional>
 
@@ -43,23 +44,32 @@ public:
  */
 class lambda_task : public simulation_task {
 public:
-    lambda_task(duration_t sampling_time, std::function<void()> task_func)
-        : _sampling_time(sampling_time), _task_func(std::move(task_func))
+    lambda_task(duration_t sampling_time,
+                std::function<void()> run,
+                std::function<void()> initialize = {},
+                std::function<void()> stop = {})
+        : _sampling_time(sampling_time),
+          _run_func(std::move(run)),
+          _initialize_func(std::move(initialize)),
+          _stop_func(std::move(stop))
     {
+        assert(_run_func && "Run function must be provided");
+        assert(_sampling_time.value() > 0.0 && "Sampling time must be positive");
     }
 
-    duration_t get_sampling_time() const override { return _sampling_time; }
+    duration_t get_sampling_time() const override;
 
-    void run() override
-    {
-        if (_task_func) {
-            _task_func();
-        }
-    }
+    void run() override;
+
+    void initialize() override;
+
+    void stop() override;
 
 private:
-    duration_t _sampling_time;
-    std::function<void()> _task_func;
+    duration_t _sampling_time{};
+    std::function<void()> _run_func{};
+    std::function<void()> _initialize_func{};
+    std::function<void()> _stop_func{};
 };
 
 }  // namespace pitaya

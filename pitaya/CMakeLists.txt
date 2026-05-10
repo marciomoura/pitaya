@@ -22,6 +22,10 @@ target_sources(
     src/srf_pll.cpp
     src/three_phase_pll.cpp
     src/dual_sogi_srf_pll.cpp
+    src/simulation/data_logger.cpp
+    src/simulation/simulation_task.cpp
+    src/simulation/simulator.cpp
+    src/simulation/task_scheduler.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -54,7 +58,11 @@ target_sources(
         include/pitaya/sogi_filter_sequence_extractor.hpp
         include/pitaya/srf_pll.hpp
         include/pitaya/three_phase_pll.hpp
-        include/pitaya/dual_sogi_srf_pll.hpp)
+        include/pitaya/dual_sogi_srf_pll.hpp
+        include/pitaya/simulation/data_logger.hpp
+        include/pitaya/simulation/simulation_task.hpp
+        include/pitaya/simulation/simulator.hpp
+        include/pitaya/simulation/task_scheduler.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 

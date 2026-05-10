@@ -37,11 +37,11 @@ TEST(SimulationTest, RunStep) {
     sim.initialize();
 
     // Base rate is 100us. 
-    sim.run_step(1);
+    sim.simulate_steps(1);
     EXPECT_EQ(count, 1);
     EXPECT_NEAR(sim.get_current_simulation_time().value(), 100e-6, 1e-9);
 
-    sim.run_step(3);
+    sim.simulate_steps(3);
     EXPECT_EQ(count, 4);
     EXPECT_NEAR(sim.get_current_simulation_time().value(), 400e-6, 1e-9);
 }
@@ -110,8 +110,8 @@ TEST(SimulationTest, ManualStepLogging) {
     sim.initialize();
 
     // Manual steps should still trigger logging
-    sim.run_step(1);
-    sim.run_step(1);
+    sim.simulate_steps(1);
+    sim.simulate_steps(1);
     
     const auto& data = sim.get_logger().get_data("time");
     EXPECT_EQ(data.size(), 2);
