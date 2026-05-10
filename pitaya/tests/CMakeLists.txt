@@ -25,6 +25,9 @@ add_executable(pitaya_tests
     three_phase_pll_test.cpp
     dual_sogi_srf_pll_test.cpp
     simulation/simulation_test.cpp
+    simulation/simulation_task_test.cpp
+    simulation/data_logger_test.cpp
+    simulation/task_scheduler_test.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 

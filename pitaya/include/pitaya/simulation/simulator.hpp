@@ -8,6 +8,7 @@
 #include <string>
 
 #include "pitaya/simulation/data_logger.hpp"
+#include "pitaya/simulation/data_logger_utils.hpp"
 #include "pitaya/simulation/task_scheduler.hpp"
 
 namespace pitaya {
@@ -31,8 +32,21 @@ public:
 
     /**
      * @brief Register a signal for logging.
+     * Uses logger_utils to automatically handle coordinate frames and quantities.
      */
-    void register_signal(std::string name, std::function<float()> func);
+    template <typename Func>
+    void register_signal(std::string name, Func func)
+    {
+        logger_utils::register_signal(_logger, std::move(name), std::move(func));
+    }
+
+    /**
+     * @brief Register a raw signal callback.
+     */
+    void register_raw_signal(std::string name, std::function<void(float*)> func, std::size_t dimension)
+    {
+        _logger.register_signal(std::move(name), std::move(func), dimension);
+    }
 
     /**
      * @brief Set the period at which signals are logged.

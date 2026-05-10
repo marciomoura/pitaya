@@ -7,7 +7,7 @@ namespace pitaya {
 simulator::simulator()
 {
     // Automatically log simulation time
-    _logger.register_signal("time", [this]() { return static_cast<float>(get_current_simulation_time_seconds()); });
+    register_signal("time", [this]() { return static_cast<float>(get_current_simulation_time_seconds()); });
 }
 
 void simulator::register_task(std::shared_ptr<simulation_task> task) { _scheduler.register_task(std::move(task)); }
@@ -15,11 +15,6 @@ void simulator::register_task(std::shared_ptr<simulation_task> task) { _schedule
 void simulator::register_lambda(duration_t sampling_time, std::function<void()> func)
 {
     _scheduler.register_lambda(sampling_time, std::move(func));
-}
-
-void simulator::register_signal(std::string name, std::function<float()> func)
-{
-    _logger.register_signal(std::move(name), std::move(func));
 }
 
 void simulator::set_logging_period(duration_t period) { _logging_period = period; }
@@ -56,8 +51,11 @@ void simulator::simulate_steps(std::size_t steps)
         std::size_t expected_samples = (steps + _logging_ratio - 1) / _logging_ratio;
         auto& entries = _logger.get_entries();
         if (!entries.empty()) {
-            std::size_t current_samples = _logger.get_data(entries[0]->get_name()).size();
-            std::size_t current_capacity = _logger.get_data(entries[0]->get_name()).capacity();
+            const auto& first_entry = entries[0];
+            const auto& data = _logger.get_data(first_entry->get_name());
+            std::size_t current_samples = data.size();
+            std::size_t current_capacity = data.capacity();
+
             if (current_samples + expected_samples > current_capacity) {
                 _logger.allocate(current_samples + expected_samples);
             }
