@@ -1,7 +1,8 @@
 #pragma once
 
-#include <functional>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "pitaya/simulation/data_logger.hpp"
 

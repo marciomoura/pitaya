@@ -1,9 +1,7 @@
 #pragma once
 
-#include <algorithm>
 #include <chrono>
 #include <memory>
-#include <numeric>
 #include <vector>
 
 #include "pitaya/simulation/simulation_task.hpp"

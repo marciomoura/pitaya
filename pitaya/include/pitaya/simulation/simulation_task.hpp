@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <chrono>
 #include <functional>
 
 #include "pitaya/types.hpp"

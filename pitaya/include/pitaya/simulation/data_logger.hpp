@@ -3,9 +3,7 @@
 #include <cassert>
 #include <functional>
 #include <memory>
-#include <span>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 namespace pitaya {
