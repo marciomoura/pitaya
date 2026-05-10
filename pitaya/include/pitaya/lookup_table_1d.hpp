@@ -62,8 +62,6 @@ public:
             _x_axis[i] = x_axis[indices[i]];
             _y_values[i] = y_values[indices[i]];
         }
-        
-        _last_x_idx = 0;
     }
 
     /**
@@ -71,7 +69,6 @@ public:
      *
      * Performs linear interpolation if the point is within the grid.
      * Clamps the result to the endpoint if the point is outside the grid.
-     * Sequential queries (where x is close to the previous x) are optimized to O(1).
      *
      * @param x The coordinate on the x-axis.
      * @return The interpolated or clamped value.
@@ -102,31 +99,18 @@ public:
 
 private:
     /**
-     * @brief Finds the index of the lower bound for a value, caching the result.
+     * @brief Finds the index of the lower bound for a value.
      */
     [[nodiscard]] size_t find_lower_bound_index(T value) const
     {
-        // Fast path: Check if the value is within the cached bin
-        if (value >= _x_axis[_last_x_idx] && value <= _x_axis[_last_x_idx + 1]) {
-            return _last_x_idx;
-        }
-
-        // Slow path: binary search
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
-        if (it == _x_axis.begin()) {
-            _last_x_idx = 0;
-        } else if (it == _x_axis.end()) {
-            _last_x_idx = NumX - 2;
-        } else {
-            _last_x_idx = static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
-        }
-        
-        return _last_x_idx;
+        if (it == _x_axis.begin()) return 0;
+        if (it == _x_axis.end()) return NumX - 2;
+        return static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
     }
 
     std::array<T, NumX> _x_axis;
     std::array<T, NumX> _y_values;
-    mutable size_t _last_x_idx{0};
 };
 
 }  // namespace pitaya

@@ -86,9 +86,6 @@ public:
                 _z_values[y][x] = z_values[original_y][original_x];
             }
         }
-        
-        _last_x_idx = 0;
-        _last_y_idx = 0;
     }
 
     /**
@@ -96,7 +93,6 @@ public:
      *
      * Performs bilinear interpolation if the point is within the grid.
      * Clamps the result to the edge if the point is outside the grid.
-     * Sequential queries are optimized to O(1).
      *
      * @param x The coordinate on the x-axis.
      * @param y The coordinate on the y-axis.
@@ -136,48 +132,28 @@ public:
 
 private:
     /**
-     * @brief Finds the index of the lower bound for x, caching the result.
+     * @brief Finds the index of the lower bound for x.
      */
     [[nodiscard]] size_t find_lower_bound_index_x(T value) const {
-        if (value >= _x_axis[_last_x_idx] && value <= _x_axis[_last_x_idx + 1]) {
-            return _last_x_idx;
-        }
-
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
-        if (it == _x_axis.begin()) {
-            _last_x_idx = 0;
-        } else if (it == _x_axis.end()) {
-            _last_x_idx = NumX - 2;
-        } else {
-            _last_x_idx = static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
-        }
-        return _last_x_idx;
+        if (it == _x_axis.begin()) return 0;
+        if (it == _x_axis.end()) return NumX - 2;
+        return static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
     }
 
     /**
-     * @brief Finds the index of the lower bound for y, caching the result.
+     * @brief Finds the index of the lower bound for y.
      */
     [[nodiscard]] size_t find_lower_bound_index_y(T value) const {
-        if (value >= _y_axis[_last_y_idx] && value <= _y_axis[_last_y_idx + 1]) {
-            return _last_y_idx;
-        }
-
         auto it = std::lower_bound(_y_axis.begin(), _y_axis.end(), value);
-        if (it == _y_axis.begin()) {
-            _last_y_idx = 0;
-        } else if (it == _y_axis.end()) {
-            _last_y_idx = NumY - 2;
-        } else {
-            _last_y_idx = static_cast<size_t>(std::distance(_y_axis.begin(), it)) - 1;
-        }
-        return _last_y_idx;
+        if (it == _y_axis.begin()) return 0;
+        if (it == _y_axis.end()) return NumY - 2;
+        return static_cast<size_t>(std::distance(_y_axis.begin(), it)) - 1;
     }
 
     std::array<T, NumX> _x_axis;
     std::array<T, NumY> _y_axis;
     std::array<std::array<T, NumX>, NumY> _z_values;
-    mutable size_t _last_x_idx{0};
-    mutable size_t _last_y_idx{0};
 };
 
 }  // namespace pitaya
