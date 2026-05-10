@@ -40,7 +40,8 @@ public:
      * @param y_axis An array representing the breakpoints on the y-axis.
      * @param z_values A 2D array of data points. Dimensions are enforced at compile time.
      */
-    lookup_table_2d(const std::array<T, NumX>& x_axis, const std::array<T, NumY>& y_axis,
+    lookup_table_2d(const std::array<T, NumX>& x_axis,
+                    const std::array<T, NumY>& y_axis,
                     const std::array<std::array<T, NumX>, NumY>& z_values)
     {
         configure(x_axis, y_axis, z_values);
@@ -53,15 +54,14 @@ public:
      * @param y_axis New y-axis breakpoints.
      * @param z_values New 2D data points.
      */
-    void configure(const std::array<T, NumX>& x_axis, const std::array<T, NumY>& y_axis,
+    void configure(const std::array<T, NumX>& x_axis,
+                   const std::array<T, NumY>& y_axis,
                    const std::array<std::array<T, NumX>, NumY>& z_values)
     {
         // 1. Sort x_axis and get permutation indices
         std::array<size_t, NumX> x_indices;
         std::iota(x_indices.begin(), x_indices.end(), 0);
-        std::sort(x_indices.begin(), x_indices.end(), [&x_axis](size_t a, size_t b) {
-            return x_axis[a] < x_axis[b];
-        });
+        std::sort(x_indices.begin(), x_indices.end(), [&x_axis](size_t a, size_t b) { return x_axis[a] < x_axis[b]; });
 
         for (size_t i = 0; i < NumX; ++i) {
             _x_axis[i] = x_axis[x_indices[i]];
@@ -70,9 +70,7 @@ public:
         // 2. Sort y_axis and get permutation indices
         std::array<size_t, NumY> y_indices;
         std::iota(y_indices.begin(), y_indices.end(), 0);
-        std::sort(y_indices.begin(), y_indices.end(), [&y_axis](size_t a, size_t b) {
-            return y_axis[a] < y_axis[b];
-        });
+        std::sort(y_indices.begin(), y_indices.end(), [&y_axis](size_t a, size_t b) { return y_axis[a] < y_axis[b]; });
 
         for (size_t i = 0; i < NumY; ++i) {
             _y_axis[i] = y_axis[y_indices[i]];
@@ -98,7 +96,8 @@ public:
      * @param y The coordinate on the y-axis.
      * @return The interpolated or clamped value.
      */
-    [[nodiscard]] T get_value(T x, T y) const {
+    [[nodiscard]] T interpolate(T x, T y) const
+    {
         // --- Step 1: Find indices and clamp coordinates ---
         size_t x_idx = find_lower_bound_index_x(x);
         size_t y_idx = find_lower_bound_index_y(y);
@@ -134,7 +133,8 @@ private:
     /**
      * @brief Finds the index of the lower bound for x.
      */
-    [[nodiscard]] size_t find_lower_bound_index_x(T value) const {
+    [[nodiscard]] size_t find_lower_bound_index_x(T value) const
+    {
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
         if (it == _x_axis.begin()) return 0;
         if (it == _x_axis.end()) return NumX - 2;
@@ -144,16 +144,17 @@ private:
     /**
      * @brief Finds the index of the lower bound for y.
      */
-    [[nodiscard]] size_t find_lower_bound_index_y(T value) const {
+    [[nodiscard]] size_t find_lower_bound_index_y(T value) const
+    {
         auto it = std::lower_bound(_y_axis.begin(), _y_axis.end(), value);
         if (it == _y_axis.begin()) return 0;
         if (it == _y_axis.end()) return NumY - 2;
         return static_cast<size_t>(std::distance(_y_axis.begin(), it)) - 1;
     }
 
-    std::array<T, NumX> _x_axis;
-    std::array<T, NumY> _y_axis;
-    std::array<std::array<T, NumX>, NumY> _z_values;
+    std::array<T, NumX> _x_axis{};
+    std::array<T, NumY> _y_axis{};
+    std::array<std::array<T, NumX>, NumY> _z_values{};
 };
 
 }  // namespace pitaya

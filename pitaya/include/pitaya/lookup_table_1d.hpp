@@ -21,13 +21,13 @@ namespace pitaya {
  * For points outside the defined grid, the value is clamped to the nearest endpoint.
  *
  * @tparam T The floating-point type of the data (e.g., float, double).
- * @tparam NumX The number of points on the x-axis.
+ * @tparam N The number of points on the x-axis.
  */
-template <typename T, size_t NumX>
+template <typename T, size_t N>
 class lookup_table_1d {
 public:
     // Compile-time check for minimum dimension
-    static_assert(NumX >= 2, "x-axis must have at least 2 points for interpolation.");
+    static_assert(N >= 2, "x-axis must have at least 2 points for interpolation.");
 
     lookup_table_1d() = default;
 
@@ -37,10 +37,7 @@ public:
      * @param x_axis An array representing the breakpoints on the x-axis.
      * @param y_values An array of data points corresponding to each x-axis breakpoint.
      */
-    lookup_table_1d(const std::array<T, NumX>& x_axis, const std::array<T, NumX>& y_values)
-    {
-        configure(x_axis, y_values);
-    }
+    lookup_table_1d(const std::array<T, N>& x_axis, const std::array<T, N>& y_values) { configure(x_axis, y_values); }
 
     /**
      * @brief Configures the lookup table with a new axis and new values, sorting them internally.
@@ -48,17 +45,15 @@ public:
      * @param x_axis New x-axis breakpoints.
      * @param y_values New data points.
      */
-    void configure(const std::array<T, NumX>& x_axis, const std::array<T, NumX>& y_values)
+    void configure(const std::array<T, N>& x_axis, const std::array<T, N>& y_values)
     {
         // Create an array of indices to sort in tandem
-        std::array<size_t, NumX> indices;
+        std::array<size_t, N> indices;
         std::iota(indices.begin(), indices.end(), 0);
 
-        std::sort(indices.begin(), indices.end(), [&x_axis](size_t a, size_t b) {
-            return x_axis[a] < x_axis[b];
-        });
+        std::sort(indices.begin(), indices.end(), [&x_axis](size_t a, size_t b) { return x_axis[a] < x_axis[b]; });
 
-        for (size_t i = 0; i < NumX; ++i) {
+        for (size_t i = 0; i < N; ++i) {
             _x_axis[i] = x_axis[indices[i]];
             _y_values[i] = y_values[indices[i]];
         }
@@ -73,7 +68,7 @@ public:
      * @param x The coordinate on the x-axis.
      * @return The interpolated or clamped value.
      */
-    [[nodiscard]] T get_value(T x) const
+    [[nodiscard]] T interpolate(T x) const
     {
         // --- Step 1: Find index and clamp coordinate ---
         size_t x_idx = find_lower_bound_index(x);
@@ -104,13 +99,19 @@ private:
     [[nodiscard]] size_t find_lower_bound_index(T value) const
     {
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
-        if (it == _x_axis.begin()) return 0;
-        if (it == _x_axis.end()) return NumX - 2;
+        if (it == _x_axis.begin()) {
+            return 0;  // Below lower bound
+        }
+
+        if (it == _x_axis.end()) {
+            return N - 2;  // Above upper bound
+        }
+
         return static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
     }
 
-    std::array<T, NumX> _x_axis;
-    std::array<T, NumX> _y_values;
+    std::array<T, N> _x_axis{};
+    std::array<T, N> _y_values{};
 };
 
 }  // namespace pitaya
