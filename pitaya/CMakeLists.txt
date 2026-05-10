@@ -26,6 +26,7 @@ target_sources(
     src/simulation/simulation_task.cpp
     src/simulation/simulator.cpp
     src/simulation/task_scheduler.cpp
+    src/simulation/data_exporter.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -62,7 +63,8 @@ target_sources(
         include/pitaya/simulation/data_logger.hpp
         include/pitaya/simulation/simulation_task.hpp
         include/pitaya/simulation/simulator.hpp
-        include/pitaya/simulation/task_scheduler.hpp)
+        include/pitaya/simulation/task_scheduler.hpp
+        include/pitaya/simulation/data_exporter.hpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
