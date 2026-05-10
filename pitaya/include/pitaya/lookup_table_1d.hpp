@@ -14,52 +14,49 @@ namespace pitaya {
  * The size of the axis must be known at compile time.
  *
  * It stores a 1D grid of data points (y) defined over an independent axis (x).
+ * It automatically sorts the input data during initialization to ensure correct interpolation.
  * It provides a method to query a value at any x coordinate, using linear
  * interpolation for points that fall between the grid lines.
  *
  * For points outside the defined grid, the value is clamped to the nearest endpoint.
- * Validation is performed via assert(), which has no overhead in release builds.
  *
  * @tparam T The floating-point type of the data (e.g., float, double).
- * @tparam NumX The number of points on the x-axis.
+ * @tparam N The number of points on the x-axis.
  */
-template <typename T, size_t NumX>
+template <typename T, size_t N>
 class lookup_table_1d {
 public:
     // Compile-time check for minimum dimension
-    static_assert(NumX >= 2, "x-axis must have at least 2 points for interpolation.");
+    static_assert(N >= 2, "x-axis must have at least 2 points for interpolation.");
 
     lookup_table_1d() = default;
 
     /**
      * @brief Constructs and initializes the 1D lookup table.
      *
-     * @param x_axis An array representing the breakpoints on the x-axis. Must be sorted.
+     * @param x_axis An array representing the breakpoints on the x-axis.
      * @param y_values An array of data points corresponding to each x-axis breakpoint.
      */
-    lookup_table_1d(const std::array<T, NumX>& x_axis, const std::array<T, NumX>& y_values)
-        : _x_axis(x_axis), _y_values(y_values)
-    {
-        // Runtime check for sorted axis (in debug builds only)
-        assert(std::is_sorted(_x_axis.begin(), _x_axis.end()) && "x-axis must be sorted.");
-    }
+    lookup_table_1d(const std::array<T, N>& x_axis, const std::array<T, N>& y_values) { configure(x_axis, y_values); }
 
     /**
-     * @brief Configures the lookup table with a new axis and new values.
+     * @brief Configures the lookup table with a new axis and new values, sorting them internally.
      *
      * @param x_axis New x-axis breakpoints.
      * @param y_values New data points.
      */
-    void configure(const std::array<T, NumX>& x_axis, const std::array<T, NumX>& y_values)
+    void configure(const std::array<T, N>& x_axis, const std::array<T, N>& y_values)
     {
-        assert(x_axis.size() == NumX && "x_axis size mismatch");
-        assert(y_values.size() == NumX && "y_values size mismatch");
+        // Create an array of indices to sort in tandem
+        std::array<size_t, N> indices;
+        std::iota(indices.begin(), indices.end(), 0);
 
-        _x_axis = x_axis;
-        _y_values = y_values;
+        std::sort(indices.begin(), indices.end(), [&x_axis](size_t a, size_t b) { return x_axis[a] < x_axis[b]; });
 
-        // Runtime check for sorted axis (in debug builds only)
-        assert(std::is_sorted(_x_axis.begin(), _x_axis.end()) && "x-axis must be sorted.");
+        for (size_t i = 0; i < N; ++i) {
+            _x_axis[i] = x_axis[indices[i]];
+            _y_values[i] = y_values[indices[i]];
+        }
     }
 
     /**
@@ -71,10 +68,10 @@ public:
      * @param x The coordinate on the x-axis.
      * @return The interpolated or clamped value.
      */
-    [[nodiscard]] T get_value(T x) const
+    [[nodiscard]] T interpolate(T x) const
     {
         // --- Step 1: Find index and clamp coordinate ---
-        size_t x_idx = find_lower_bound_index(_x_axis, x);
+        size_t x_idx = find_lower_bound_index(x);
 
         // Clamp the input coordinate to the table boundaries
         x = std::clamp(x, _x_axis.front(), _x_axis.back());
@@ -97,19 +94,24 @@ public:
 
 private:
     /**
-     * @brief Finds the index of the lower bound for a value in a sorted axis array.
+     * @brief Finds the index of the lower bound for a value.
      */
-    template <size_t N>
-    [[nodiscard]] size_t find_lower_bound_index(const std::array<T, N>& axis, T value) const
+    [[nodiscard]] size_t find_lower_bound_index(T value) const
     {
-        auto it = std::lower_bound(axis.begin(), axis.end(), value);
-        if (it == axis.begin()) return 0;
-        if (it == axis.end()) return N - 2;
-        return static_cast<size_t>(std::distance(axis.begin(), it)) - 1;
+        auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
+        if (it == _x_axis.begin()) {
+            return 0;  // Below lower bound
+        }
+
+        if (it == _x_axis.end()) {
+            return N - 2;  // Above upper bound
+        }
+
+        return static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
     }
 
-    std::array<T, NumX> _x_axis;
-    std::array<T, NumX> _y_values;
+    std::array<T, N> _x_axis{};
+    std::array<T, N> _y_values{};
 };
 
 }  // namespace pitaya
