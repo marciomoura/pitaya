@@ -35,10 +35,8 @@ protected:
 
         sim.register_signal("v_abc", [this]() { return v_abc; });
         sim.register_signal("measured_frequency", [this]() { return pll.get_estimated_frequency().value(); });
-        sim.register_signal(
-            "reference_angle", [this]() { return ref_angle - angle_wrapped::from_radians(angle_t{pi / 2.0f}); });
-        sim.register_signal(
-            "measured_angle", [this]() { return pll.get_estimated_angle_aligned_phase_a().get_radians(); });
+        sim.register_signal("reference_angle", [this]() { return ref_angle.get_radians(); });
+        sim.register_signal("measured_angle", [this]() { return pll.get_estimated_angle().get_radians(); });
 
         sim.initialize();
     }
