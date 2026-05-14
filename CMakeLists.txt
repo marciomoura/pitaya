@@ -25,6 +25,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Build Options
 option(PITAYA_BUILD_TESTING "Build the testing tree" ON)
 option(PITAYA_BUILD_EXAMPLES "Build examples" ON)
+option(PITAYA_ENABLE_SIMULATION "Enable simulation framework" ON)
 option(PITAYA_ENABLE_CCACHE "Enable ccache" ON)
 option(PITAYA_ENABLE_CPPCHECK "Enable static analysis with cppcheck" ON)
 
@@ -51,6 +52,10 @@ if(PITAYA_ENABLE_CPPCHECK)
 endif()
 
 # Dependencies
+set(MOJITO_BUILD_TESTING
+    OFF
+    CACHE BOOL "Build the testing tree" FORCE
+)
 include(mojito)
 
 # Testing Setup

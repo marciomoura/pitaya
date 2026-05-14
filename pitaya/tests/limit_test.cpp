@@ -1,6 +1,7 @@
+#include "pitaya/limit.hpp"
+
 #include <gtest/gtest.h>
 
-#include "pitaya/limit.hpp"
 #include <mojito/mojito.hpp>
 
 namespace pitaya::test {
@@ -258,8 +259,8 @@ TEST(LimitDeathTest, InvalidRange)
 {
     // Test death cases - these should trigger assertions in debug builds
 #ifndef NDEBUG
-    EXPECT_DEATH(limit<int>::range(5, 10, 0), "Wrong range limits");
-    EXPECT_DEATH(limit<double>::range(5.0, 10.0, 0.0), "Wrong range limits");
+    EXPECT_DEATH(limit<int>::range(5, 10, 0), "Upper limit must be greater than lower limit");
+    EXPECT_DEATH(limit<double>::range(5.0, 10.0, 0.0), "Upper limit must be greater than lower limit");
 #else
     // In release builds, just verify the function doesn't crash
     // These should not crash in release mode (assertions disabled)
@@ -402,8 +403,8 @@ TEST(LimitTest, RangeWithUpperLimitStatusQuantity)
     EXPECT_FALSE(result1.was_limited);
 
     // Test value below range - should NOT report as limited (lower limit hit)
-    auto result2 =
-        limit<current_pu_t>::range_with_upper_limit_status(current_pu_t(-2.0f), current_pu_t(-1.5f), current_pu_t(1.5f));
+    auto result2 = limit<current_pu_t>::range_with_upper_limit_status(
+        current_pu_t(-2.0f), current_pu_t(-1.5f), current_pu_t(1.5f));
     EXPECT_NEAR(result2.value.value(), -1.5f, 1e-6);
     EXPECT_FALSE(result2.was_limited);
 
@@ -432,8 +433,8 @@ TEST(LimitTest, RangeWithUpperLimitStatusQuantity)
     EXPECT_FALSE(result6.was_limited);
 
     // Test value at lower bound - should not report as limited
-    auto result7 =
-        limit<current_pu_t>::range_with_upper_limit_status(current_pu_t(-1.5f), current_pu_t(-1.5f), current_pu_t(1.5f));
+    auto result7 = limit<current_pu_t>::range_with_upper_limit_status(
+        current_pu_t(-1.5f), current_pu_t(-1.5f), current_pu_t(1.5f));
     EXPECT_NEAR(result7.value.value(), -1.5f, 1e-6);
     EXPECT_FALSE(result7.was_limited);
 }

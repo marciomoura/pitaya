@@ -21,11 +21,6 @@ target_sources(
             src/srf_pll.cpp
             src/three_phase_pll.cpp
             src/dual_sogi_srf_pll.cpp
-            src/simulation/data_logger.cpp
-            src/simulation/simulation_task.cpp
-            src/simulation/simulator.cpp
-            src/simulation/task_scheduler.cpp
-            src/simulation/data_exporter.cpp
     PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
@@ -58,13 +53,21 @@ target_sources(
           include/pitaya/srf_pll.hpp
           include/pitaya/three_phase_pll.hpp
           include/pitaya/dual_sogi_srf_pll.hpp
-          include/pitaya/simulation/data_logger.hpp
-          include/pitaya/simulation/simulation_task.hpp
-          include/pitaya/simulation/simulator.hpp
-          include/pitaya/simulation/task_scheduler.hpp
-          include/pitaya/simulation/data_exporter.hpp
-          include/pitaya/simulation/gtest_data_exporter.hpp
 )
+
+if(PITAYA_ENABLE_SIMULATION)
+    target_sources(
+        ${PROJECT_NAME}
+        PRIVATE src/simulation/data_logger.cpp src/simulation/simulation_task.cpp src/simulation/simulator.cpp
+                src/simulation/task_scheduler.cpp src/simulation/data_exporter.cpp
+        PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS include
+        FILES include/pitaya/simulation/data_logger.hpp include/pitaya/simulation/simulation_task.hpp
+              include/pitaya/simulation/simulator.hpp include/pitaya/simulation/task_scheduler.hpp
+              include/pitaya/simulation/data_exporter.hpp include/pitaya/simulation/gtest_data_exporter.hpp
+    )
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC mojito::mojito)
 
