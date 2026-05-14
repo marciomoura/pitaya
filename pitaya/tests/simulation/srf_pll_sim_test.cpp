@@ -31,10 +31,13 @@ protected:
             pll.update(mojito::to_alphabeta(v_abc));
         });
 
-        sim.register_signal("v_abc", [this]() { return v_abc; });
-        sim.register_signal("measured_frequency", [this]() { return pll.get_estimated_frequency().value(); });
-        sim.register_signal("reference_angle", [this]() { return ref_angle.get_radians(); });
-        sim.register_signal("measured_angle", [this]() { return pll.get_estimated_angle().get_radians(); });
+        sim.register_signal(plot_metadata{.name = "v_abc", .row = 1, .col = 1}, [this]() { return v_abc; });
+        sim.register_signal(plot_metadata{.name = "measured_frequency", .row = 2, .col = 1},
+            [this]() { return pll.get_estimated_frequency().value(); });
+        sim.register_signal(
+            plot_metadata{.name = "reference_angle", .row = 3, .col = 1}, [this]() { return ref_angle.get_pu(); });
+        sim.register_signal(plot_metadata{.name = "measured_angle", .row = 3, .col = 1},
+            [this]() { return pll.get_estimated_angle().get_pu(); });
 
         // Assertions
         sim.register_assertion(make_near_assert<float>(
@@ -84,8 +87,8 @@ TEST_F(SrfPllSimTest, FrequencyStep)
 
 TEST_F(SrfPllSimTest, PhaseStep)
 {
-    gen.set_angle_step(
-        angle_wrapped::from_radians(angle_t{static_cast<float>(mojito::pi / 4.0)}), 0.5f);  // +45 deg jump
+    gen.set_angle_step(angle_wrapped::from_radians(angle_t{static_cast<float>(mojito::pi / 4.0)}),
+        0.5f);  // +45 deg jump
 
     sim.register_assertion(make_lambda_assert(
         "angle_lock_after_jump",
