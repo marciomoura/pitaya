@@ -13,6 +13,11 @@ namespace {
 using namespace pitaya;
 using namespace mojito;
 
+/// @class SrfPllSimTest
+/// @brief Simulation tests for the Synchronous Reference Frame PLL (SRF-PLL).
+///
+/// These tests verify the frequency and phase tracking capabilities of the SRF-PLL
+/// under various transient conditions like frequency steps and phase jumps.
 class SrfPllSimTest : public ::testing::Test {
 protected:
     void SetUp() override
@@ -38,58 +43,76 @@ protected:
             plot_metadata{.name = "reference_angle", .row = 3, .col = 1}, [this]() { return ref_angle.get_pu(); });
         sim.register_signal(plot_metadata{.name = "measured_angle", .row = 3, .col = 1},
             [this]() { return pll.get_estimated_angle().get_pu(); });
-
-        // Assertions
-        sim.register_assertion(make_near_assert<float>(
-            "frequency_lock", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.2f,
-            time_range(duration_t{0.15}, duration_t{0.2})));
-
-        sim.register_assertion(make_lambda_assert(
-            "angle_lock",
-            [this]() {
-                float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
-                if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
-                float diff = std::abs(diff_rad);
-                if (diff > 0.1f) {
-                    return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
-                }
-                return assertion_result::pass();
-            },
-            time_range(duration_t{0.15}, duration_t{0.2})));
     }
 
     simulator sim = make_gtest_simulator();
+
     three_phase_waveform_generator gen{100e-6};
     srf_pll pll{duration_t{100e-6}};
     abc<voltage_pu_t> v_abc{voltage_pu_t{0.0f}, voltage_pu_t{0.0f}, voltage_pu_t{0.0f}};
     angle_wrapped ref_angle{0.0f};
 };
 
+/// @test LockedResponse
+/// @brief Verifies the basic locking behavior and steady-state accuracy.
+///
+/// Ensures the PLL locks onto the nominal 50Hz frequency and maintains
+/// a low phase error.
 TEST_F(SrfPllSimTest, LockedResponse)
 {
+    // Assertions
+    // 1. Frequency lock verification
+    sim.register_assertion(make_near_assert<float>(
+        "frequency_lock", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.2f,
+        time_range(duration_t{0.15}, duration_t{0.2})));
+
+    // 2. Phase lock verification (Angle error < 0.1 rad)
+    sim.register_assertion(make_lambda_assert(
+        "angle_lock",
+        [this]() {
+            float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
+            if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
+            float diff = std::abs(diff_rad);
+            if (diff > 0.1f) {
+                return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
+            }
+            return assertion_result::pass();
+        },
+        time_range(duration_t{0.15}, duration_t{0.2})));
+
     sim.initialize();
-    gtest_exporter exporter(sim);
     sim.simulate_for(duration_t(0.2));
 }
 
+/// @test FrequencyStep
+/// @brief Verifies the PLL's response to a sudden frequency step.
+///
+/// Applies a +10Hz step at 0.5s and ensures the PLL tracks it accurately
+/// after a short transient.
 TEST_F(SrfPllSimTest, FrequencyStep)
 {
     gen.set_frequency_step(10.0f, 0.5f);  // 50Hz -> 60Hz at 0.5s
 
+    // Assertion: PLL should track 60Hz after step
     sim.register_assertion(make_near_assert<float>(
         "frequency_after_step", [this]() { return pll.get_estimated_frequency().value(); }, 60.0f, 0.5f,
         time_range(duration_t{0.8}, duration_t{1.0})));
 
     sim.initialize();
-    gtest_exporter exporter(sim);
     sim.simulate_for(duration_t(1.0));
 }
 
+/// @test PhaseStep
+/// @brief Verifies the PLL's response to a sudden phase jump.
+///
+/// Applies a +45 degree phase jump at 0.5s and ensures the PLL re-synchronizes
+/// with the new phase angle.
 TEST_F(SrfPllSimTest, PhaseStep)
 {
     gen.set_angle_step(angle_wrapped::from_radians(angle_t{static_cast<float>(mojito::pi / 4.0)}),
         0.5f);  // +45 deg jump
 
+    // Assertion: PLL should re-lock onto the phase angle after the jump
     sim.register_assertion(make_lambda_assert(
         "angle_lock_after_jump",
         [this]() {
@@ -104,7 +127,6 @@ TEST_F(SrfPllSimTest, PhaseStep)
         time_range(duration_t{0.8}, duration_t{1.0})));
 
     sim.initialize();
-    gtest_exporter exporter(sim);
     sim.simulate_for(duration_t(1.0));
 }
 
