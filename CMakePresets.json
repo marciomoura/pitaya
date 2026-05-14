@@ -9,7 +9,8 @@
             "cacheVariables": {
                 "PITAYA_BUILD_TESTING": "ON",
                 "PITAYA_BUILD_EXAMPLES": "ON",
-                "PITAYA_ENABLE_CCACHE": "ON"
+                "PITAYA_ENABLE_CCACHE": "ON",
+                "PITAYA_ENABLE_SIMULATION": "ON"
             },
             "generator": "Ninja"
         },
