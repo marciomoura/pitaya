@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include "pitaya/boolean_debouncer.hpp"
+#include "pitaya/off_delay.hpp"
+#include "pitaya/on_delay.hpp"
 #include "pitaya/on_off_delay.hpp"
 #include "pitaya/simulation/gtest_data_exporter.hpp"
 #include "pitaya/simulation/gtest_simulator.hpp"
@@ -26,6 +28,10 @@ protected:
 
         // On-Off Delay: 20ms on, 100ms off
         delay_block.configure(0.02f, 0.1f);
+
+        // Individual Delays: 50ms
+        ton.configure(0.05f);
+        toff.configure(0.05f);
 
         sim.register_lambda(duration_t{1e-3}, [this]() {
             double current_time = sim.get_current_simulation_time_seconds();
@@ -57,17 +63,23 @@ protected:
 
             debouncer.update(raw_input);
             delay_block.update(raw_input);
+            ton.update(raw_input);
+            toff.update(raw_input);
         });
 
         sim.register_signal("raw_input", [this]() { return raw_input ? 1.0f : 0.0f; });
         sim.register_signal("debounced", [this]() { return debouncer.get_output() ? 1.0f : 0.0f; });
         sim.register_signal("delayed", [this]() { return delay_block.get_output() ? 1.0f : 0.0f; });
+        sim.register_signal("ton_out", [this]() { return ton.get_output() ? 1.0f : 0.0f; });
+        sim.register_signal("toff_out", [this]() { return toff.get_output() ? 1.0f : 0.0f; });
     }
 
     simulator sim = make_gtest_simulator();
 
     boolean_debouncer debouncer;
     on_off_delay delay_block{0.001};
+    on_delay ton{0.05f, 0.001};
+    off_delay toff{0.05f, 0.001};
     bool raw_input{false};
 };
 
@@ -96,6 +108,31 @@ TEST_F(TimingLogicSimTest, TimingDiagrams)
                                               : assertion_result::fail("Debouncer failed to turn ON");
             },
         .strategy = time_range({.start = duration_t{0.4}, .end = duration_t{0.5}})}));
+
+    sim.initialize();
+    sim.simulate_for(duration_t(0.8));
+}
+
+/// @test IndividualDelays
+/// @brief Verifies standalone on_delay and off_delay behaviors.
+TEST_F(TimingLogicSimTest, IndividualDelays)
+{
+    // 1. On-delay (ton): input true at 0.3s, delay 50ms -> true at 0.35s
+    sim.register_assertion(make_lambda_assert({.name = "ton_delayed",
+        .func =
+            [this]() {
+                return ton.get_output() ? assertion_result::pass() : assertion_result::fail("TON failed to turn ON");
+            },
+        .strategy = time_range({.start = duration_t{0.36}, .end = duration_t{0.49}})}));
+
+    // 2. Off-delay (toff): input false at 0.5s, delay 50ms -> false at 0.55s
+    sim.register_assertion(make_lambda_assert({.name = "toff_delayed",
+        .func =
+            [this]() {
+                return !toff.get_output() ? assertion_result::pass()
+                                          : assertion_result::fail("TOFF failed to turn OFF");
+            },
+        .strategy = time_range({.start = duration_t{0.56}, .end = duration_t{0.7}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.8));
