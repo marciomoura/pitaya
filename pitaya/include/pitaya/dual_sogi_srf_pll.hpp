@@ -1,20 +1,21 @@
 #pragma once
 
 #include <mojito/mojito.hpp>
+
 #include "pitaya/sogi_filter_sequence_extractor.hpp"
 #include "pitaya/three_phase_pll.hpp"
 #include "pitaya/types.hpp"
 
 namespace pitaya {
 
-/**
- * @brief Robust three-phase PLL using a Dual-SOGI sequence extractor as a pre-filter.
- */
+/// Three-phase PLL using a Dual-SOGI sequence extractor as a pre-filter.
 class dual_sogi_srf_pll {
 public:
+    /// @param sampling_time Must be positive.
     explicit dual_sogi_srf_pll(mojito::duration_t sampling_time);
 
-    void configure_sequence_extractor(real_t k, mojito::duration_t time_constant_dc_offset_rejection, bool scale_output = true);
+    void configure_sequence_extractor(
+        real_t k, mojito::duration_t time_constant_dc_offset_rejection, bool scale_output = true);
 
     void configure_pi_controller(real_t kp, mojito::duration_t ti);
 

@@ -5,36 +5,27 @@
 
 namespace pitaya {
 
-/**
- * @brief Threshold comparison direction for protection logic.
- */
+/// Threshold comparison direction for protection logic.
 enum class threshold_direction {
     above,  ///< Trips when signal exceeds threshold (overcurrent, overvoltage)
     below   ///< Trips when signal falls below threshold (undervoltage)
 };
 
-/**
- * @brief Generic threshold-based protection with latching behavior.
- *
- * This component implements a protection function that:
- * - Monitors a signal against configurable trip and warning thresholds
- * - Provides optional time delay for debouncing (prevents nuisance trips)
- * - Latches when trip threshold is exceeded (or falls below for undervoltage)
- * - Remains latched until explicitly reset
- * - Only allows reset when fault condition has cleared
- * - Provides separate non-latched warning output
- *
- * @tparam T The type of the monitored signal (e.g., current_pu_t, voltage_pu_t)
- * @tparam Direction Trip direction: 'above' for overcurrent/overvoltage, 'below' for undervoltage
- */
+/// Generic threshold-based protection with latching behavior.
+///
+/// This component implements a protection function that:
+/// - Monitors a signal against trip and warning thresholds
+/// - Provides optional time delay for debouncing
+/// - Latches when trip threshold is exceeded (or falls below for undervoltage)
+/// - Remains latched until explicitly reset
+/// - Only allows reset when fault condition has cleared
+/// - Provides separate non-latched warning output
+///
+/// @tparam T The type of the monitored signal (e.g., current_pu_t, voltage_pu_t)
+/// @tparam Direction Trip direction: 'above' for overcurrent/overvoltage, 'below' for undervoltage
 template <typename T, threshold_direction Direction = threshold_direction::above>
 class threshold_protection {
 public:
-    /**
-     * @brief Constructs the threshold protection with specified sampling period.
-     *
-     * @param sampling_period The control loop sampling period [s]
-     */
     explicit threshold_protection(duration_t sampling_period)
         : _sampling_time(sampling_period.value()),
           _trip_timer(0.0f, _sampling_time),
@@ -42,15 +33,12 @@ public:
     {
     }
 
-    /**
-     * @brief Configures the trip threshold and optional hysteresis.
-     *
-     * For 'above' direction: Reset threshold = trip_threshold * (1 - hysteresis)
-     * For 'below' direction: Reset threshold = trip_threshold * (1 + hysteresis)
-     *
-     * @param trip_threshold The threshold at which protection trips
-     * @param hysteresis_factor Hysteresis band as fraction of threshold (default 0.05 = 5%)
-     */
+    /// Configures the trip threshold and optional hysteresis.
+    ///
+    /// For 'above' direction: Reset threshold = trip_threshold * (1 - hysteresis)
+    /// For 'below' direction: Reset threshold = trip_threshold * (1 + hysteresis)
+    ///
+    /// @param hysteresis_factor Hysteresis band as fraction of threshold (default 0.05 = 5%)
     void configure_trip_threshold(T trip_threshold, real_t hysteresis_factor = 0.05f)
     {
         _trip_threshold = trip_threshold;
@@ -65,36 +53,21 @@ public:
         }
     }
 
-    /**
-     * @brief Configures the warning threshold.
-     *
-     * Warning threshold should be lower than trip threshold.
-     *
-     * @param warning_threshold The threshold above which warning is active
-     */
+    /// Configures the warning threshold.
+    /// Warning threshold should be lower than trip threshold.
     void configure_warning_threshold(T warning_threshold) { _warning_threshold = warning_threshold; }
 
-    /**
-     * @brief Configures the time delay before trip activation.
-     *
-     * @param trip_delay Time delay for trip activation [s]
-     */
+    /// Configures the time delay before trip activation [s].
     void configure_trip_delay(duration_t trip_delay) { _trip_timer.configure(static_cast<real_t>(trip_delay.value())); }
 
-    /**
-     * @brief Configures the time delay before warning activation.
-     *
-     * @param warning_delay Time delay for warning activation [s]
-     */
-    void configure_warning_delay(duration_t warning_delay) { _warning_timer.configure(static_cast<real_t>(warning_delay.value())); }
+    /// Configures the time delay before warning activation [s].
+    void configure_warning_delay(duration_t warning_delay)
+    {
+        _warning_timer.configure(static_cast<real_t>(warning_delay.value()));
+    }
 
-    /**
-     * @brief Updates the protection with the latest measured value.
-     *
-     * Evaluates the input against thresholds and manages trip/warning states.
-     *
-     * @param measured_value The current measured value to monitor
-     */
+    /// Updates the protection with the latest measured value.
+    /// Evaluates the input against thresholds and manages trip/warning states.
     void update(T measured_value)
     {
         _current_value = measured_value;
@@ -127,11 +100,8 @@ public:
         _warning_timer.update(exceeds_warning);
     }
 
-    /**
-     * @brief Resets the trip latch if fault condition has cleared.
-     *
-     * Reset is only allowed when measured value is below reset threshold.
-     */
+    /// Resets the trip latch if fault condition has cleared.
+    /// Reset is only allowed when measured value is below reset threshold.
     void reset()
     {
         if (can_reset()) {
@@ -141,38 +111,19 @@ public:
         }
     }
 
-    /**
-     * @brief Gets the latched trip status.
-     *
-     * @return True if protection has tripped and remains latched
-     */
+    /// Gets the latched trip status.
     [[nodiscard]] bool is_tripped() const noexcept { return _is_tripped; }
 
-    /**
-     * @brief Gets the active trip status (non-latched).
-     *
-     * Returns true if the fault condition is currently present and the trip delay has elapsed.
-     * This status clears automatically when the fault condition is removed.
-     *
-     * @return True if trip condition is currently active
-     */
+    /// Gets the active trip status (non-latched).
+    /// Returns true if the fault condition is currently present and the trip delay has elapsed.
     [[nodiscard]] bool is_active() const noexcept { return _trip_timer.get_output(); }
 
-    /**
-     * @brief Gets the non-latched warning status.
-     *
-     * @return True if measured value currently exceeds warning threshold
-     */
+    /// Gets the non-latched warning status.
     [[nodiscard]] bool is_warning() const noexcept { return _warning_timer.get_output(); }
 
-    /**
-     * @brief Checks if protection can be reset.
-     *
-     * For 'above' direction: Reset allowed when current value < reset threshold
-     * For 'below' direction: Reset allowed when current value > reset threshold
-     *
-     * @return True if fault condition has cleared and reset is allowed
-     */
+    /// Checks if protection can be reset.
+    /// For 'above' direction: Reset allowed when current value < reset threshold
+    /// For 'below' direction: Reset allowed when current value > reset threshold
     [[nodiscard]] bool can_reset() const noexcept
     {
         if constexpr (Direction == threshold_direction::above) {
@@ -183,25 +134,13 @@ public:
         }
     }
 
-    /**
-     * @brief Gets the current measured value.
-     *
-     * @return The most recent measured value passed to update()
-     */
+    /// Gets the current measured value.
     [[nodiscard]] T get_current_value() const noexcept { return _current_value; }
 
-    /**
-     * @brief Gets the configured trip threshold.
-     *
-     * @return The trip threshold value
-     */
+    /// Gets the configured trip threshold.
     [[nodiscard]] T get_trip_threshold() const noexcept { return _trip_threshold; }
 
-    /**
-     * @brief Gets the configured warning threshold.
-     *
-     * @return The warning threshold value
-     */
+    /// Gets the configured warning threshold.
     [[nodiscard]] T get_warning_threshold() const noexcept { return _warning_threshold; }
 
 private:

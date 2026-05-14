@@ -1,44 +1,36 @@
 #pragma once
 
 #include <cmath>
+#include <mojito/mojito.hpp>
 #include <type_traits>
 
-#include <mojito/mojito.hpp>
 #include "pitaya/types.hpp"
 
 namespace pitaya {
 
-/**
- * Base class for second-order IIR (Infinite Impulse Response) digital filters.
- */
+/// Base class for second-order IIR (Infinite Impulse Response) digital filters.
 template <typename T>
 class second_order_filter {
 public:
     using type = double;
 
 protected:
-    /**
-     * Protected constructor for derived classes
-     * @param sampling_period Sampling period in seconds
-     */
+    /// @param sampling_period Sampling period in seconds
     second_order_filter(type sampling_period) : _ts(sampling_period) {}
 
     // Compute angular frequency in radians/second from Hz
     static constexpr type compute_omega(type freq) { return type(2.0) * mojito::pi * freq; }
 
 public:
-    /**
-     * Process input sample through filter
-     * @param input Current input sample x[n]
-     * @return Filtered output sample y[n]
-     */
+    /// Process input sample through filter.
     T update(T input)
     {
         // Convert input to double for internal calculations
         const double input_double = static_cast<double>(static_cast<real_t>(input));
 
         // Implement difference equation
-        const double output_double = -_a1 * _y1_internal - _a2 * _y2_internal + _b0 * input_double + _b1 * _x1_internal + _b2 * _x2_internal;
+        const double output_double =
+            -_a1 * _y1_internal - _a2 * _y2_internal + _b0 * input_double + _b1 * _x1_internal + _b2 * _x2_internal;
 
         // Update state variables
         _x2_internal = _x1_internal;
@@ -49,25 +41,24 @@ public:
         // Convert back to output type
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(output_double)};
-        } else {
+        }
+        else {
             return static_cast<T>(output_double);
         }
     }
 
-    /**
-     * Get the last output sample
-     */
-    T get_output() const { 
+    /// Get the last output sample.
+    T get_output() const
+    {
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(_y1_internal)};
-        } else {
+        }
+        else {
             return static_cast<T>(_y1_internal);
         }
     }
 
-    /**
-     * Get magnitude response at given frequency
-     */
+    /// Get magnitude response at given frequency.
     type get_magnitude_response(type freq) const
     {
         const type omega = compute_omega(freq);
@@ -84,21 +75,19 @@ public:
         return std::sqrt(num / den);
     }
 
-    /**
-     * Get magnitude response in decibels
-     */
-    T get_magnitude_response_db(type freq) const { 
+    /// Get magnitude response in decibels.
+    T get_magnitude_response_db(type freq) const
+    {
         double res = 20.0 * std::log10(get_magnitude_response(freq));
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(res)};
-        } else {
+        }
+        else {
             return static_cast<T>(res);
         }
     }
 
-    /**
-     * Get phase response at given frequency
-     */
+    /// Get phase response at given frequency.
     type get_phase_response(type freq) const
     {
         const type omega = compute_omega(freq);
@@ -119,22 +108,17 @@ public:
         return num_phase - den_phase;
     }
 
-    /**
-     * Get phase response in degrees
-     */
+    /// Get phase response in degrees.
     type get_phase_response_degrees(type freq) const { return get_phase_response(freq) * type(180.0) / mojito::pi; }
 
-    /**
-     * Reset filter state variables
-     */
+    /// Reset filter state variables.
     void reset() { _x1_internal = _x2_internal = _y1_internal = _y2_internal = 0.0; }
 
-    /**
-     * Reset filter state variables to a specific initial value
-     */
-    void reset(T initial_value) { 
+    /// Reset filter state variables to a specific initial value.
+    void reset(T initial_value)
+    {
         double val = static_cast<double>(static_cast<real_t>(initial_value));
-        _x1_internal = _x2_internal = _y1_internal = _y2_internal = val; 
+        _x1_internal = _x2_internal = _y1_internal = _y2_internal = val;
     }
 
     // Getter methods
@@ -163,9 +147,7 @@ protected:
     double _y2_internal{0.0};
 };
 
-/**
- * Second-order low-pass filter implementation.
- */
+/// Second-order low-pass filter.
 template <typename T>
 class second_order_low_pass_filter : public second_order_filter<T> {
 public:
@@ -196,9 +178,7 @@ public:
     }
 };
 
-/**
- * Second-order band-reject (notch) filter implementation.
- */
+/// Second-order band-reject (notch) filter.
 template <typename T>
 class second_order_band_reject_filter : public second_order_filter<T> {
 public:
@@ -228,9 +208,7 @@ public:
     }
 };
 
-/**
- * Second-order high-pass filter implementation.
- */
+/// Second-order high-pass filter.
 template <typename T>
 class second_order_high_pass_filter : public second_order_filter<T> {
 public:

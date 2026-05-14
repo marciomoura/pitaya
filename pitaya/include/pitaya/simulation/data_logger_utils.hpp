@@ -8,9 +8,7 @@
 
 namespace pitaya {
 
-/**
- * @brief General utilities for extracting data from various types.
- */
+/// Utilities for extracting data from various types.
 struct logger_utils {
     template <typename T>
     static float extract_value(const T& val)

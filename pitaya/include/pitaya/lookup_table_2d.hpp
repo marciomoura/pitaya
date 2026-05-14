@@ -7,23 +7,21 @@
 
 namespace pitaya {
 
-/**
- * @brief A 2D lookup table with bilinear interpolation using std::array for fixed-size, no-allocation storage.
- *
- * This class is designed for embedded systems where dynamic memory allocation is disallowed.
- * The sizes of the axes must be known at compile time.
- *
- * It stores a 2D grid of data points (z) defined over two independent axes (x and y).
- * It automatically sorts the input data during initialization to ensure correct interpolation.
- * It provides a method to query a value at any (x, y) coordinate, using bilinear
- * interpolation for points that fall between the grid lines.
- *
- * For points outside the defined grid, the value is clamped to the nearest edge/corner.
- *
- * @tparam T The floating-point type of the data (e.g., float, double).
- * @tparam NumX The number of points on the x-axis.
- * @tparam NumY The number of points on the y-axis.
- */
+/// 2D lookup table with bilinear interpolation using std::array for fixed-size, no-allocation storage.
+///
+/// This class is designed for embedded systems where dynamic memory allocation is disallowed.
+/// The sizes of the axes must be known at compile time.
+///
+/// It stores a 2D grid of data points (z) defined over two independent axes (x and y).
+/// It automatically sorts the input data during initialization to ensure correct interpolation.
+/// It provides a method to query a value at any (x, y) coordinate, using bilinear
+/// interpolation for points that fall between the grid lines.
+///
+/// For points outside the defined grid, the value is clamped to the nearest edge/corner.
+///
+/// @tparam T The floating-point type of the data (e.g., float, double).
+/// @tparam NumX The number of points on the x-axis.
+/// @tparam NumY The number of points on the y-axis.
 template <typename T, size_t NumX, size_t NumY>
 class lookup_table_2d {
 public:
@@ -33,30 +31,18 @@ public:
 
     lookup_table_2d() = default;
 
-    /**
-     * @brief Constructs and initializes the 2D lookup table.
-     *
-     * @param x_axis An array representing the breakpoints on the x-axis.
-     * @param y_axis An array representing the breakpoints on the y-axis.
-     * @param z_values A 2D array of data points. Dimensions are enforced at compile time.
-     */
+    /// Initializes the 2D lookup table.
     lookup_table_2d(const std::array<T, NumX>& x_axis,
-                    const std::array<T, NumY>& y_axis,
-                    const std::array<std::array<T, NumX>, NumY>& z_values)
+        const std::array<T, NumY>& y_axis,
+        const std::array<std::array<T, NumX>, NumY>& z_values)
     {
         configure(x_axis, y_axis, z_values);
     }
 
-    /**
-     * @brief Configures the lookup table with new axes and values, sorting them internally.
-     *
-     * @param x_axis New x-axis breakpoints.
-     * @param y_axis New y-axis breakpoints.
-     * @param z_values New 2D data points.
-     */
+    /// Configures the lookup table with new axes and values, sorting them internally.
     void configure(const std::array<T, NumX>& x_axis,
-                   const std::array<T, NumY>& y_axis,
-                   const std::array<std::array<T, NumX>, NumY>& z_values)
+        const std::array<T, NumY>& y_axis,
+        const std::array<std::array<T, NumX>, NumY>& z_values)
     {
         // 1. Sort x_axis and get permutation indices
         std::array<size_t, NumX> x_indices;
@@ -86,16 +72,10 @@ public:
         }
     }
 
-    /**
-     * @brief Retrieves a value from the table for a given (x, y) coordinate.
-     *
-     * Performs bilinear interpolation if the point is within the grid.
-     * Clamps the result to the edge if the point is outside the grid.
-     *
-     * @param x The coordinate on the x-axis.
-     * @param y The coordinate on the y-axis.
-     * @return The interpolated or clamped value.
-     */
+    /// Retrieves a value from the table for a given (x, y) coordinate.
+    ///
+    /// Performs bilinear interpolation if the point is within the grid.
+    /// Clamps the result to the edge if the point is outside the grid.
     [[nodiscard]] T interpolate(T x, T y) const
     {
         // --- Step 1: Find indices and clamp coordinates ---
@@ -130,9 +110,7 @@ public:
     }
 
 private:
-    /**
-     * @brief Finds the index of the lower bound for x.
-     */
+    /// Finds the index of the lower bound for x.
     [[nodiscard]] size_t find_lower_bound_index_x(T value) const
     {
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);
@@ -141,9 +119,7 @@ private:
         return static_cast<size_t>(std::distance(_x_axis.begin(), it)) - 1;
     }
 
-    /**
-     * @brief Finds the index of the lower bound for y.
-     */
+    /// Finds the index of the lower bound for y.
     [[nodiscard]] size_t find_lower_bound_index_y(T value) const
     {
         auto it = std::lower_bound(_y_axis.begin(), _y_axis.end(), value);

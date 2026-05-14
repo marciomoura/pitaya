@@ -1,13 +1,12 @@
 #pragma once
 
 #include <mojito/mojito.hpp>
+
 #include "pitaya/sogi_filter.hpp"
 
 namespace pitaya {
 
-/**
- * @brief Implements a Dual SOGI-based Positive Sequence Component Extractor.
- */
+/// Dual SOGI-based Positive Sequence Component Extractor.
 class sogi_filter_sequence_extractor {
 public:
     explicit sogi_filter_sequence_extractor(duration_t sampling_time);

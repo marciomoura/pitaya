@@ -2,16 +2,14 @@
 
 #include <cassert>
 #include <cmath>
+#include <mojito/mojito.hpp>
 #include <type_traits>
 
-#include <mojito/mojito.hpp>
 #include "pitaya/types.hpp"
 
 namespace pitaya {
 
-/**
- * First-order low-pass filter implementation.
- */
+/// First-order low-pass filter.
 template <typename T>
 class first_order_low_pass_filter {
 public:
@@ -20,6 +18,7 @@ public:
     {
     }
 
+    /// @param cutoff_freq Must be positive and less than Nyquist frequency (fs/2).
     void configure(real_t cutoff_freq)
     {
         const double cutoff_freq_double = static_cast<double>(cutoff_freq);
@@ -48,9 +47,6 @@ public:
         _a1 = (omega_w * _ts - 2.0) / denom;
     }
 
-    /**
-     * Calculate cutoff frequency from time constant.
-     */
     static constexpr T calculate_cutoff_frequency(T time_constant)
     {
         const double tc_double = static_cast<double>(static_cast<real_t>(time_constant));
@@ -61,9 +57,7 @@ public:
         return T(static_cast<float>(result));
     }
 
-    /**
-     * Calculate time to reach steady state within a specified percentage.
-     */
+    /// Calculate time to reach steady state within a specified percentage.
     static constexpr T calculate_settling_time(T cutoff_freq, T percent_of_final_value)
     {
         const double fc_double = static_cast<double>(static_cast<real_t>(cutoff_freq));
@@ -81,9 +75,6 @@ public:
         return T(static_cast<float>(result));
     }
 
-    /**
-     * Process input sample through filter.
-     */
     T update(T input)
     {
         // Convert input to double for internal calculations
@@ -99,22 +90,22 @@ public:
         // Convert back to output type
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(output_double)};
-        } else {
+        }
+        else {
             return static_cast<T>(output_double);
         }
     }
 
-    T get_output() const { 
+    T get_output() const
+    {
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(_output_internal)};
-        } else {
+        }
+        else {
             return static_cast<T>(_output_internal);
         }
     }
 
-    /**
-     * Reset filter state variables to specified value
-     */
     void reset(real_t value = 0.0f)
     {
         const double value_double = static_cast<double>(value);
@@ -122,9 +113,7 @@ public:
         _output_internal = value_double;
     }
 
-    /**
-     * Calculate magnitude response at given frequency.
-     */
+    /// Calculate magnitude response at given frequency.
     T get_magnitude_response(T freq) const
     {
         const double freq_double = static_cast<double>(static_cast<real_t>(freq));
@@ -139,28 +128,25 @@ public:
         const double result = std::sqrt(num / den);
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(result)};
-        } else {
+        }
+        else {
             return static_cast<T>(result);
         }
     }
 
-    /**
-     * Calculate magnitude response in decibels.
-     */
     T get_magnitude_response_db(T freq) const
     {
         const double mag = static_cast<double>(static_cast<real_t>(get_magnitude_response(freq)));
         const double result = 20.0 * std::log10(mag);
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(result)};
-        } else {
+        }
+        else {
             return static_cast<T>(result);
         }
     }
 
-    /**
-     * Calculate phase response at given frequency.
-     */
+    /// Calculate phase response at given frequency.
     T get_phase_response(T freq) const
     {
         const double freq_double = static_cast<double>(static_cast<real_t>(freq));
@@ -182,21 +168,20 @@ public:
         const double result = num_phase - den_phase;
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(result)};
-        } else {
+        }
+        else {
             return static_cast<T>(result);
         }
     }
 
-    /**
-     * Convert phase response from radians to degrees
-     */
     T get_phase_response_degrees(T freq) const
     {
         const double phase_rad = static_cast<double>(static_cast<real_t>(get_phase_response(freq)));
         const double result = phase_rad * 180.0 / mojito::pi;
         if constexpr (mojito::internal::is_quantity<T>::value) {
             return T{static_cast<float>(result)};
-        } else {
+        }
+        else {
             return static_cast<T>(result);
         }
     }

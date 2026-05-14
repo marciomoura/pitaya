@@ -1,18 +1,17 @@
 #pragma once
 
 #include <mojito/mojito.hpp>
+
 #include "pitaya/integrator.hpp"
 #include "pitaya/types.hpp"
 
 namespace pitaya {
 
-/**
- * @brief Discretization-Compensated Second-Order Generalized Integrator (SOGI).
- */
+/// Discretization-Compensated Second-Order Generalized Integrator (SOGI).
 class sogi_filter {
 public:
-    static constexpr real_t default_k = 1.414f; 
-    
+    static constexpr real_t default_k = 1.414f;
+
     explicit sogi_filter(duration_t sampling_time);
 
     void configure(real_t k);

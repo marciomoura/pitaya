@@ -4,52 +4,28 @@
 
 namespace pitaya {
 
-/**
- * @brief Calculates the discrete-time derivative of a signal.
- *
- * This class computes the derivative of an input signal based on the
- * difference between the current and previous input values, divided by the
- * sampling time.
- *
- * The derivative is calculated as:
- *   y[k] = (u[k] - u[k-1]) / Ts
- * where:
- *   - y[k] is the output at the current step.
- *   - u[k] is the input at the current step.
- *   - u[k-1] is the input at the previous step.
- *   - Ts is the sampling time.
- */
+/// Calculates the discrete-time derivative of a signal.
+///
+/// Computes the derivative based on the difference between the current and
+/// previous input values, divided by the sampling time:
+///   y[k] = (u[k] - u[k-1]) / Ts
 class derivative {
 public:
-    /**
-     * @brief Constructs the derivative calculator.
-     * @param sampling_time The sampling time (Ts) in seconds. Must be positive.
-     * @param initial_value The initial value to assume for the previous input (u[k-1]).
-     */
+    /// Constructs the derivative calculator.
+    /// The sampling time must be positive.
     explicit derivative(double sampling_time, real_t initial_value = 0.0f);
 
-    /**
-     * @brief Configures the sampling time.
-     * @param sampling_time The new sampling time in seconds. Must be positive.
-     */
+    /// Configures the sampling time.
+    /// The sampling time must be positive.
     void configure_sampling_time(double sampling_time);
 
-    /**
-     * @brief Updates the calculator with a new input value and computes the derivative.
-     * @param input The current input value (u[k]).
-     */
+    /// Updates the calculator with a new input value and computes the derivative.
     void update(real_t input) noexcept;
 
-    /**
-     * @brief Resets the internal state of the calculator.
-     * @param reset_value The value to which the previous input state is reset.
-     */
+    /// Resets the internal state of the calculator.
     void reset(real_t reset_value = 0.0f);
 
-    /**
-     * @brief Gets the most recently calculated derivative value.
-     * @return The derivative of the input signal [units/s].
-     */
+    /// Gets the most recently calculated derivative value [units/s].
     real_t get_output() const noexcept;
 
 private:

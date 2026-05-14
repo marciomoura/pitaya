@@ -4,56 +4,34 @@
 
 namespace pitaya {
 
-/**
- * @brief Creates a time delay for a falling edge signal (Off-Delay Timer).
- *
- * This class implements a classic off-delay timer. When the input signal goes
- * from false to true, the output becomes true immediately. When the input
- * signal goes from true to false, an internal timer begins counting. The output
- * will only become false if the input remains continuously false for the
- * specified duration. If the input goes true at any point, the timer resets.
- */
+/// Time delay for a falling edge signal (Off-Delay Timer).
+///
+/// This class implements a classic off-delay timer. When the input signal goes
+/// from false to true, the output becomes true immediately. When the input
+/// signal goes from true to false, an internal timer begins counting. The output
+/// will only become false if the input remains continuously false for the
+/// specified duration. If the input goes true at any point, the timer resets.
 class off_delay {
 public:
-    /**
-     * @brief Constructs the off-delay timer.
-     *
-     * @param delay_s The time in seconds the input must remain false before the output switches off.
-     * @param sampling_time The execution interval (sampling time) in seconds.
-     */
     off_delay(real_t delay_s, double sampling_time);
 
-    /**
-     * @brief Updates the timer logic with the current input value.
-     *
-     * This method should be called once per execution cycle. It evaluates the
-     * input and updates the internal state of the timer.
-     *
-     * @param input The boolean input signal for the current time step.
-     */
+    /// Updates the timer logic with the current input value.
+    ///
+    /// This method should be called once per execution cycle. It evaluates the
+    /// input and updates the internal state of the timer.
     void update(bool input);
 
-    /**
-     * @brief Gets the current output state of the timer.
-     *
-     * @return True if the input is true, or if the input has been false for less than the configured delay.
-     */
+    /// Gets the current output state of the timer.
     bool get_output() const;
 
-    /**
-     * @brief Forcibly resets the timer to its initial, off state.
-     *
-     * The internal counter is reset, and the output is set to false.
-     */
+    /// Forcibly resets the timer to its initial, off state.
+    ///
+    /// The internal counter is reset, and the output is set to false.
     void reset();
 
-    /**
-     * @brief Configures or changes the delay duration of the timer.
-     *
-     * Calling this method also resets the timer to its initial state.
-     *
-     * @param delay_s The new delay time in seconds.
-     */
+    /// Configures or changes the delay duration of the timer.
+    ///
+    /// Calling this method also resets the timer to its initial state.
     void configure(real_t delay_s);
 
 private:
