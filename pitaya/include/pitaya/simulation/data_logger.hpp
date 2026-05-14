@@ -80,19 +80,30 @@ private:
     std::size_t _dimension;
 };
 
+/// Metadata for a signal used for plotting and reporting.
+struct plot_metadata {
+    std::string name;
+    std::string group = "General";
+    uint32_t row = 0;  // 0 = auto-arrange
+    uint32_t col = 0;  // 0 = auto-arrange
+};
+
 /// Represents a single data point or vector to be logged.
 class data_logger_entry {
 public:
     using sample_func_t = std::function<void(float*)>;
 
-    data_logger_entry(std::string name, sample_func_t func, std::size_t dimension = 1);
+    data_logger_entry(plot_metadata metadata, sample_func_t func, std::size_t dimension = 1);
 
     const std::string& get_name() const;
+    const std::string& get_group() const;
+    uint32_t get_row() const;
+    uint32_t get_col() const;
     std::size_t get_dimension() const;
     void sample(float* out_ptr) const;
 
 private:
-    std::string _name;
+    plot_metadata _metadata;
     sample_func_t _func;
     std::size_t _dimension;
 };
@@ -101,7 +112,16 @@ private:
 class data_logger {
 public:
     /// Register a signal to be logged.
-    void register_signal(std::string name, std::function<void(float*)> func, std::size_t dimension);
+    /// @param metadata Plotting metadata including name, group, and position.
+    /// @param func Callback that writes the signal data into the provided float buffer.
+    /// @param dimension Number of floats written by the callback.
+    void register_signal(plot_metadata metadata, std::function<void(float*)> func, std::size_t dimension);
+
+    /// Register a signal to be logged (convenience overload).
+    void register_signal(std::string name, std::function<void(float*)> func, std::size_t dimension)
+    {
+        register_signal(plot_metadata{.name = std::move(name)}, std::move(func), dimension);
+    }
 
     /// Pre-allocate memory for the expected number of samples.
     void allocate(std::size_t num_samples);

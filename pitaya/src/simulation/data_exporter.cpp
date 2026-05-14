@@ -28,7 +28,7 @@ void export_to_binary(const simulator& sim, const std::filesystem::path& file_pa
     const char magic[4] = {'P', 'T', 'Y', 'A'};
     ofs.write(magic, 4);
 
-    uint32_t version = 1;
+    uint32_t version = 2;
     ofs.write(reinterpret_cast<const char*>(&version), sizeof(version));
 
     uint32_t num_signals = static_cast<uint32_t>(entries.size());
@@ -39,11 +39,27 @@ void export_to_binary(const simulator& sim, const std::filesystem::path& file_pa
 
     // 2. Metadata
     for (const auto& entry : entries) {
+        // Name
         const std::string& name = entry->get_name();
         uint32_t name_len = static_cast<uint32_t>(name.size());
         ofs.write(reinterpret_cast<const char*>(&name_len), sizeof(name_len));
         ofs.write(name.data(), name_len);
 
+        // Group
+        const std::string& group = entry->get_group();
+        uint32_t group_len = static_cast<uint32_t>(group.size());
+        ofs.write(reinterpret_cast<const char*>(&group_len), sizeof(group_len));
+        ofs.write(group.data(), group_len);
+
+        // Row
+        uint32_t row = entry->get_row();
+        ofs.write(reinterpret_cast<const char*>(&row), sizeof(row));
+
+        // Col
+        uint32_t col = entry->get_col();
+        ofs.write(reinterpret_cast<const char*>(&col), sizeof(col));
+
+        // Dimension
         uint32_t dimension = static_cast<uint32_t>(entry->get_dimension());
         ofs.write(reinterpret_cast<const char*>(&dimension), sizeof(dimension));
     }
