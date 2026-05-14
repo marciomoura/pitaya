@@ -30,19 +30,29 @@ add_executable(
     simulation/data_logger_test.cpp
     simulation/task_scheduler_test.cpp
     simulation/data_exporter_test.cpp
+    simulation/simulation_report_demo.cpp
 )
 target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(pitaya_tests)
 
-# Cross-platform target to generate simulation reports
+# Target to run tests and generate reports in one go
 find_package(Python3 REQUIRED)
 add_custom_target(
-    generate_report
+    run_and_report
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/pitaya/tools/generate_report.py --executable
             $<TARGET_FILE:pitaya_tests> --output-dir ${CMAKE_BINARY_DIR}/reports --headless
     DEPENDS pitaya_tests
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running tests and generating interactive Plotly reports..."
+)
+
+# Target to generate reports from ALREADY EXECUTED tests
+add_custom_target(
+    generate_report
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/pitaya/tools/generate_report.py --input-dir ${CMAKE_BINARY_DIR}
+            --output-dir ${CMAKE_BINARY_DIR}/reports --headless
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Generating reports from existing .bin files..."
 )

@@ -3,6 +3,9 @@ build*/
 build-host*/
 _deps/
 vendor/
+__pycache__/
+*.py[cod]
+*$py.class
 
 # IDEs and editors
 .vs/
