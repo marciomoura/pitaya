@@ -1,4 +1,4 @@
-#include "pitaya/second_order_filter.hpp"
+#include "pitaya/second_order_low_pass_filter.hpp"
 
 #include <gtest/gtest.h>
 
@@ -28,7 +28,8 @@ TEST_F(SecondOrderLowPassFilterTest, MagnitudeResponseAtCutoff)
 
 TEST_F(SecondOrderLowPassFilterTest, MagnitudeResponseAtVariousFrequencies)
 {
-    const std::vector<real_t> test_freqs = {cutoff_freq / 100.0f, cutoff_freq / 10.0f, cutoff_freq, cutoff_freq * 10.0f};
+    const std::vector<real_t> test_freqs = {
+        cutoff_freq / 100.0f, cutoff_freq / 10.0f, cutoff_freq, cutoff_freq * 10.0f};
     const std::vector<real_t> expected_db = {0.0f, 0.0f, -3.0f, -40.0f};
 
     for (size_t i = 0; i < test_freqs.size(); ++i) {
@@ -63,40 +64,4 @@ TEST_F(SecondOrderLowPassFilterTest, SinusoidalResponseMagnitude)
     const real_t measured_magnitude = max_output / input_amplitude;
     const real_t theoretical_magnitude = static_cast<real_t>(filter.get_magnitude_response(test_freq));
     EXPECT_NEAR(measured_magnitude, theoretical_magnitude, 0.01f);
-}
-
-class SecondOrderBandRejectFilterTest : public ::testing::Test {
-protected:
-    static constexpr real_t sampling_freq = 10000.0f;
-    static constexpr real_t sampling_period = 1.0f / sampling_freq;
-    static constexpr real_t center_freq = 100.0f;
-    static constexpr real_t bandwidth = 10.0f;
-
-    second_order_band_reject_filter<real_t> filter{sampling_period};
-
-    void SetUp() override { filter.configure(center_freq, bandwidth); }
-};
-
-TEST_F(SecondOrderBandRejectFilterTest, MagnitudeResponseAtCenterFrequency)
-{
-    const real_t magnitude_db = filter.get_magnitude_response_db(center_freq);
-    EXPECT_LT(magnitude_db, -20.0f);
-}
-
-class SecondOrderHighPassFilterTest : public ::testing::Test {
-protected:
-    static constexpr real_t sampling_freq = 100000.0f;
-    static constexpr real_t sampling_period = 1.0f / sampling_freq;
-    static constexpr real_t cutoff_freq = 100.0f;
-    static constexpr real_t damping_ratio = 0.707f;
-
-    second_order_high_pass_filter<real_t> filter{sampling_period};
-
-    void SetUp() override { filter.configure(cutoff_freq, damping_ratio); }
-};
-
-TEST_F(SecondOrderHighPassFilterTest, MagnitudeResponseAtCutoff)
-{
-    const real_t magnitude_db = filter.get_magnitude_response_db(cutoff_freq);
-    EXPECT_NEAR(magnitude_db, -3.0f, 0.5f);
 }

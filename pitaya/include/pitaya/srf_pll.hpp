@@ -4,7 +4,7 @@
 
 #include "pitaya/integrator.hpp"
 #include "pitaya/pi_controller.hpp"
-#include "pitaya/second_order_filter.hpp"
+#include "pitaya/second_order_low_pass_filter.hpp"
 #include "pitaya/types.hpp"
 
 namespace pitaya {

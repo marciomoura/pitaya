@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "pitaya/second_order_filter.hpp"
+#include "pitaya/second_order_band_reject_filter.hpp"
 #include "pitaya/types.hpp"
 
 namespace pitaya {

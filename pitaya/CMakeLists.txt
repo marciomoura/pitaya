@@ -45,6 +45,9 @@ target_sources(
           include/pitaya/range_kutta_derivative.hpp
           include/pitaya/first_order_low_pass_filter.hpp
           include/pitaya/second_order_filter.hpp
+          include/pitaya/second_order_low_pass_filter.hpp
+          include/pitaya/second_order_band_reject_filter.hpp
+          include/pitaya/second_order_high_pass_filter.hpp
           include/pitaya/hardware_filter_compensator.hpp
           include/pitaya/pi_controller.hpp
           include/pitaya/adaptive_band_reject_filter.hpp
