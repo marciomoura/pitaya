@@ -20,6 +20,8 @@ target_sources(
           gtest_data_exporter.hpp
           assertion.hpp
           gtest_simulator.hpp
+          white_noise_generator.hpp
+          three_phase_waveform_generator.hpp
 )
 
 # Conditional GTest support
