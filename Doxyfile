@@ -1,0 +1,73 @@
+# Doxygen Configuration for Pitaya
+# Optimized for high-signal, modern C++ documentation
+
+# --- Project Settings ---
+PROJECT_NAME           = "Pitaya"
+PROJECT_NUMBER         = "v1.0.0"
+PROJECT_BRIEF          = "Real-time control and simulation library"
+OUTPUT_DIRECTORY       = docs
+CREATE_SUBDIRECTORIES  = YES
+ALLOW_UNICODE_NAMES    = YES
+OUTPUT_LANGUAGE        = English
+
+# --- Input Settings ---
+# Documenting only the public headers to match the cleanup
+INPUT                  = pitaya/include
+RECURSIVE              = YES
+FILE_PATTERNS          = *.hpp *.h
+EXCLUDE_PATTERNS       = */__pycache__/* */build/* */tests/*
+
+# --- Documentation Standard Configuration ---
+# Match the "high-signal" cleanup:
+# - Use the first line as brief (even without @brief)
+# - Javadoc style support
+# - Clean out redundant boilerplate
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
+DISTRIBUTE_GROUP_DOC   = YES
+SUBGROUPING            = YES
+
+# --- Extraction Settings ---
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = NO
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_IN_BODY_DOCS      = NO
+
+# --- Build Settings ---
+CASE_SENSE_NAMES       = YES
+SHOW_INCLUDE_FILES     = YES
+FORCE_LOCAL_INCLUDES   = NO
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBERS_CTORS_1ST = YES
+
+# --- Preprocessor Settings ---
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           = pitaya/include
+
+# --- HTML Output ---
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+# Use modern navigation
+HTML_DYNAMIC_SECTIONS  = YES
+GENERATE_TREEVIEW      = YES
+
+# --- LaTeX Output ---
+GENERATE_LATEX         = NO
+
+# --- Look and Feel ---
+# Set theme to follow modern coding standards
+USE_MATHJAX            = YES
+MATHJAX_FORMAT         = HTML-CSS
+MATHJAX_RELPATH        = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/
