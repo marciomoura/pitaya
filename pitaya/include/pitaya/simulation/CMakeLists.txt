@@ -20,6 +20,23 @@ target_sources(
           gtest_data_exporter.hpp
 )
 
+# Conditional GTest support
+if(TARGET gtest::gtest
+   OR TARGET GTest::gtest
+   OR TARGET gtest
+)
+    target_sources(pitaya_simulation PRIVATE ${PROJECT_SOURCE_DIR}/src/simulation/gtest_data_exporter.cpp)
+    target_compile_definitions(pitaya_simulation PUBLIC PITAYA_HAS_GTEST)
+
+    if(TARGET GTest::gtest)
+        target_link_libraries(pitaya_simulation PRIVATE GTest::gtest)
+    elseif(TARGET gtest::gtest)
+        target_link_libraries(pitaya_simulation PRIVATE gtest::gtest)
+    else()
+        target_link_libraries(pitaya_simulation PRIVATE gtest)
+    endif()
+endif()
+
 target_include_directories(
     pitaya_simulation
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
