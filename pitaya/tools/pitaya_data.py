@@ -12,6 +12,7 @@ class PitayaDataLoader:
         self.data = {}
         self.num_samples = 0
         self.num_signals = 0
+        self.version = 0
         self.load()
 
     def load(self):
@@ -25,9 +26,9 @@ class PitayaDataLoader:
             if magic != b'PTYA':
                 raise ValueError("Not a valid Pitaya binary file")
             
-            version, = struct.unpack('I', f.read(4))
-            if version != 1:
-                raise ValueError(f"Unsupported Pitaya binary version: {version}")
+            self.version, = struct.unpack('I', f.read(4))
+            if self.version not in [1, 2]:
+                raise ValueError(f"Unsupported Pitaya binary version: {self.version}")
 
             self.num_signals, = struct.unpack('I', f.read(4))
             self.num_samples, = struct.unpack('I', f.read(4))
@@ -35,11 +36,34 @@ class PitayaDataLoader:
             # Metadata
             signals = []
             for _ in range(self.num_signals):
+                # Name
                 name_len, = struct.unpack('I', f.read(4))
                 name = f.read(name_len).decode('utf-8')
+                
+                group = "General"
+                row = 0
+                col = 0
+                
+                if self.version >= 2:
+                    # Group
+                    group_len, = struct.unpack('I', f.read(4))
+                    group = f.read(group_len).decode('utf-8')
+                    # Row/Col
+                    row, = struct.unpack('I', f.read(4))
+                    col, = struct.unpack('I', f.read(4))
+
+                # Dimension
                 dimension, = struct.unpack('I', f.read(4))
-                signals.append({'name': name, 'dimension': dimension})
-                self.metadata[name] = {'dimension': dimension}
+                
+                sig_meta = {
+                    'name': name, 
+                    'group': group, 
+                    'row': row, 
+                    'col': col, 
+                    'dimension': dimension
+                }
+                signals.append(sig_meta)
+                self.metadata[name] = sig_meta
                 
             # Data
             for sig in signals:

@@ -4,22 +4,28 @@
 
 namespace pitaya {
 
-data_logger_entry::data_logger_entry(std::string name, sample_func_t func, std::size_t dimension)
-    : _name(std::move(name)), _func(std::move(func)), _dimension(dimension)
+data_logger_entry::data_logger_entry(plot_metadata metadata, sample_func_t func, std::size_t dimension)
+    : _metadata(std::move(metadata)), _func(std::move(func)), _dimension(dimension)
 {
     assert(_dimension > 0 && "Dimension must be positive");
     assert(_func && "Function must be valid");
 }
 
-const std::string& data_logger_entry::get_name() const { return _name; }
+const std::string& data_logger_entry::get_name() const { return _metadata.name; }
+
+const std::string& data_logger_entry::get_group() const { return _metadata.group; }
+
+uint32_t data_logger_entry::get_row() const { return _metadata.row; }
+
+uint32_t data_logger_entry::get_col() const { return _metadata.col; }
 
 std::size_t data_logger_entry::get_dimension() const { return _dimension; }
 
 void data_logger_entry::sample(float* out_ptr) const { _func(out_ptr); }
 
-void data_logger::register_signal(std::string name, std::function<void(float*)> func, std::size_t dimension)
+void data_logger::register_signal(plot_metadata metadata, std::function<void(float*)> func, std::size_t dimension)
 {
-    _entries.push_back(std::make_shared<data_logger_entry>(std::move(name), std::move(func), dimension));
+    _entries.push_back(std::make_shared<data_logger_entry>(std::move(metadata), std::move(func), dimension));
     _signal_buffers.emplace_back();
 }
 
@@ -56,8 +62,8 @@ signal_data_view data_logger::get_data(const std::string& name) const
             return signal_data_view(_signal_buffers[i], _entries[i]->get_dimension());
         }
     }
-    static const std::vector<float> empty{};
-    return signal_data_view(empty, 0);
+    static const std::vector<float> empty_vec{};
+    return signal_data_view(empty_vec, 1);  // Dimension 1 for empty view consistency
 }
 
 const std::vector<std::shared_ptr<data_logger_entry>>& data_logger::get_entries() const { return _entries; }

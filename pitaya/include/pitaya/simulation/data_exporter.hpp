@@ -8,7 +8,7 @@ namespace pitaya {
 
 /**
  * @brief Exports the recorded simulation data to a custom, performant binary format.
- * 
+ *
  * Format:
  * - Header:
  *   - Magic: "PTYA" (4 bytes)
@@ -21,7 +21,7 @@ namespace pitaya {
  *   - Dimension: uint32_t
  * - For each signal:
  *   - Data: float[NumSamples * Dimension]
- * 
+ *
  * @param sim The simulator containing the logged data.
  * @param file_path The path to the output binary file.
  */
@@ -29,7 +29,7 @@ void export_to_binary(const simulator& sim, const std::filesystem::path& file_pa
 
 /**
  * @brief Exports the recorded simulation data to a CSV format.
- * 
+ *
  * @param sim The simulator containing the logged data.
  * @param file_path The path to the output CSV file.
  */

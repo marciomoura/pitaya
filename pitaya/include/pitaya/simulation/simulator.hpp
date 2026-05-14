@@ -21,18 +21,32 @@ public:
     /// Register a lambda task with the simulation.
     void register_lambda(duration_t sampling_time, std::function<void()> func);
 
+    /// Register a signal for logging with explicit metadata.
+    template <typename Func>
+    void register_signal(plot_metadata metadata, Func func)
+    {
+        std::string name = metadata.name;
+        logger_utils::register_signal(_logger, std::move(metadata), std::move(func));
+    }
+
     /// Register a signal for logging.
     /// Uses logger_utils to automatically handle coordinate frames and quantities.
     template <typename Func>
     void register_signal(std::string name, Func func)
     {
-        logger_utils::register_signal(_logger, std::move(name), std::move(func));
+        register_signal(plot_metadata{.name = std::move(name)}, std::move(func));
+    }
+
+    /// Register a raw signal callback with explicit metadata.
+    void register_raw_signal(plot_metadata metadata, std::function<void(float*)> func, std::size_t dimension)
+    {
+        _logger.register_signal(std::move(metadata), std::move(func), dimension);
     }
 
     /// Register a raw signal callback.
     void register_raw_signal(std::string name, std::function<void(float*)> func, std::size_t dimension)
     {
-        _logger.register_signal(std::move(name), std::move(func), dimension);
+        register_raw_signal(plot_metadata{.name = std::move(name)}, std::move(func), dimension);
     }
 
     /// Set the period at which signals are logged.

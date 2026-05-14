@@ -22,7 +22,7 @@ struct logger_utils {
     }
 
     template <typename Func>
-    static void register_signal(data_logger& logger, std::string name, Func func)
+    static void register_signal(data_logger& logger, plot_metadata metadata, Func func)
     {
         using T = std::invoke_result_t<Func>;
 
@@ -33,7 +33,7 @@ struct logger_utils {
                           std::declval<T>().c();
                       }) {
             logger.register_signal(
-                std::move(name),
+                std::move(metadata),
                 [func](float* out) {
                     auto val = func();
                     out[0] = extract_value(val.a());
@@ -48,7 +48,7 @@ struct logger_utils {
                                std::declval<T>().beta();
                            }) {
             logger.register_signal(
-                std::move(name),
+                std::move(metadata),
                 [func](float* out) {
                     auto val = func();
                     out[0] = extract_value(val.alpha());
@@ -62,7 +62,7 @@ struct logger_utils {
                                std::declval<T>().q();
                            }) {
             logger.register_signal(
-                std::move(name),
+                std::move(metadata),
                 [func](float* out) {
                     auto val = func();
                     out[0] = extract_value(val.d());
@@ -72,8 +72,14 @@ struct logger_utils {
         }
         // Scalar
         else {
-            logger.register_signal(std::move(name), [func](float* out) { *out = extract_value(func()); }, 1);
+            logger.register_signal(std::move(metadata), [func](float* out) { *out = extract_value(func()); }, 1);
         }
+    }
+
+    template <typename Func>
+    static void register_signal(data_logger& logger, std::string name, Func func)
+    {
+        register_signal(logger, plot_metadata{.name = std::move(name)}, std::move(func));
     }
 };
 
