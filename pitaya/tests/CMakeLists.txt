@@ -35,6 +35,8 @@ if(PITAYA_ENABLE_SIMULATION)
                 simulation/simulation_report_demo.cpp
     )
 
+    target_link_libraries(pitaya_tests PRIVATE pitaya::simulation)
+
     # Target to run tests and generate reports in one go
     find_package(Python3 REQUIRED)
     add_custom_target(
