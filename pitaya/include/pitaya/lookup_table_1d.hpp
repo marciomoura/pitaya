@@ -7,22 +7,20 @@
 
 namespace pitaya {
 
-/**
- * @brief A 1D lookup table with linear interpolation using std::array for fixed-size, no-allocation storage.
- *
- * This class is designed for embedded systems where dynamic memory allocation is disallowed.
- * The size of the axis must be known at compile time.
- *
- * It stores a 1D grid of data points (y) defined over an independent axis (x).
- * It automatically sorts the input data during initialization to ensure correct interpolation.
- * It provides a method to query a value at any x coordinate, using linear
- * interpolation for points that fall between the grid lines.
- *
- * For points outside the defined grid, the value is clamped to the nearest endpoint.
- *
- * @tparam T The floating-point type of the data (e.g., float, double).
- * @tparam N The number of points on the x-axis.
- */
+/// 1D lookup table with linear interpolation using std::array for fixed-size, no-allocation storage.
+///
+/// This class is designed for embedded systems where dynamic memory allocation is disallowed.
+/// The size of the axis must be known at compile time.
+///
+/// It stores a 1D grid of data points (y) defined over an independent axis (x).
+/// It automatically sorts the input data during initialization to ensure correct interpolation.
+/// It provides a method to query a value at any x coordinate, using linear
+/// interpolation for points that fall between the grid lines.
+///
+/// For points outside the defined grid, the value is clamped to the nearest endpoint.
+///
+/// @tparam T The floating-point type of the data (e.g., float, double).
+/// @tparam N The number of points on the x-axis.
 template <typename T, size_t N>
 class lookup_table_1d {
 public:
@@ -31,20 +29,10 @@ public:
 
     lookup_table_1d() = default;
 
-    /**
-     * @brief Constructs and initializes the 1D lookup table.
-     *
-     * @param x_axis An array representing the breakpoints on the x-axis.
-     * @param y_values An array of data points corresponding to each x-axis breakpoint.
-     */
+    /// Initializes the 1D lookup table.
     lookup_table_1d(const std::array<T, N>& x_axis, const std::array<T, N>& y_values) { configure(x_axis, y_values); }
 
-    /**
-     * @brief Configures the lookup table with a new axis and new values, sorting them internally.
-     *
-     * @param x_axis New x-axis breakpoints.
-     * @param y_values New data points.
-     */
+    /// Configures the lookup table with a new axis and new values, sorting them internally.
     void configure(const std::array<T, N>& x_axis, const std::array<T, N>& y_values)
     {
         // Create an array of indices to sort in tandem
@@ -59,15 +47,10 @@ public:
         }
     }
 
-    /**
-     * @brief Retrieves a value from the table for a given x coordinate.
-     *
-     * Performs linear interpolation if the point is within the grid.
-     * Clamps the result to the endpoint if the point is outside the grid.
-     *
-     * @param x The coordinate on the x-axis.
-     * @return The interpolated or clamped value.
-     */
+    /// Retrieves a value from the table for a given x coordinate.
+    ///
+    /// Performs linear interpolation if the point is within the grid.
+    /// Clamps the result to the endpoint if the point is outside the grid.
     [[nodiscard]] T interpolate(T x) const
     {
         // --- Step 1: Find index and clamp coordinate ---
@@ -93,9 +76,7 @@ public:
     }
 
 private:
-    /**
-     * @brief Finds the index of the lower bound for a value.
-     */
+    /// Finds the index of the lower bound for a value.
     [[nodiscard]] size_t find_lower_bound_index(T value) const
     {
         auto it = std::lower_bound(_x_axis.begin(), _x_axis.end(), value);

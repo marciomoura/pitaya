@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mojito/mojito.hpp>
+
 #include "pitaya/adaptive_band_reject_filter.hpp"
 #include "pitaya/integrator.hpp"
 #include "pitaya/on_delay.hpp"
@@ -10,9 +11,7 @@
 
 namespace pitaya {
 
-/**
- * @brief Three-phase phase locked loop (PLL) for frequency and phase estimation
- */
+/// Three-phase phase locked loop (PLL) for frequency and phase estimation.
 class three_phase_pll {
 public:
     static constexpr real_t default_pi_kp = 0.2f;

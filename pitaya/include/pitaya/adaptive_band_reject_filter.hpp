@@ -8,20 +8,25 @@
 
 namespace pitaya {
 
-/**
- * @brief An adaptive band-reject (notch) filter with two parallel filters for smooth frequency transitions.
- */
+/// Adaptive band-reject (notch) filter with two parallel filters for smooth frequency transitions.
 template <typename T>
 class adaptive_band_reject_filter {
 public:
+    /// Constructs an adaptive band-reject filter.
+    /// The sampling period must be positive.
     explicit adaptive_band_reject_filter(double sampling_period)
         : _sampling_time(sampling_period),
-          _filters{second_order_band_reject_filter<T>(sampling_period),
-                   second_order_band_reject_filter<T>(sampling_period)} {
+          _filters{
+              second_order_band_reject_filter<T>(sampling_period), second_order_band_reject_filter<T>(sampling_period)}
+    {
         assert(sampling_period > 0.0 && "Sampling time must be positive");
     }
 
-    void configure(real_t initial_center_freq, real_t bandwidth, real_t frequency_threshold_hz, real_t settling_time_s) {
+    /// Configures the filter parameters.
+    /// The initial center frequency, bandwidth, and frequency threshold must be positive.
+    /// The settling time must be non-negative.
+    void configure(real_t initial_center_freq, real_t bandwidth, real_t frequency_threshold_hz, real_t settling_time_s)
+    {
         assert(initial_center_freq > 0.0f && "Initial center frequency must be positive");
         assert(bandwidth > 0.0f && "Bandwidth must be positive");
         assert(frequency_threshold_hz > 0.0f && "Frequency threshold must be positive");
@@ -35,7 +40,8 @@ public:
         reset();
     }
 
-    void reset() {
+    void reset()
+    {
         _filters[0].configure(_initial_center_freq, _bandwidth);
         _filters[1].configure(_initial_center_freq, _bandwidth);
         _filters[0].reset();
@@ -49,7 +55,8 @@ public:
         _settling_counter = 0;
     }
 
-    T update(T input, real_t estimated_frequency_hz) {
+    T update(T input, real_t estimated_frequency_hz)
+    {
         const T output0 = _filters[0].update(input);
         const T output1 = _filters[1].update(input);
 
@@ -59,7 +66,8 @@ public:
                 _active_filter_index = 1 - _active_filter_index;
                 _is_switching = false;
             }
-        } else {
+        }
+        else {
             const real_t freq_deviation = std::abs(estimated_frequency_hz - _center_freqs[_active_filter_index]);
             if (freq_deviation > _frequency_threshold_hz) {
                 _is_switching = true;

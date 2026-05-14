@@ -8,64 +8,38 @@
 
 namespace pitaya {
 
-/**
- * @brief Schedules simulation tasks based on their individual execution rates.
- */
+/// Schedules simulation tasks based on their individual execution rates.
 class task_scheduler {
 public:
-    /**
-     * @brief Helper to convert duration_t to internal precise chrono duration.
-     */
+    /// Helper to convert duration_t to internal precise chrono duration.
     static std::chrono::nanoseconds to_ns(duration_t d);
 
-    /**
-     * @brief Structure to group tasks that run at the same rate.
-     */
+    /// Structure to group tasks that run at the same rate.
     struct task_group {
         std::size_t normalized_ticks{};
         std::vector<std::shared_ptr<simulation_task>> tasks{};
     };
 
-    /**
-     * @brief Register a task with the scheduler.
-     * @param task Pointer to the task to register.
-     */
+    /// Register a task with the scheduler.
     void register_task(std::shared_ptr<simulation_task> task);
 
-    /**
-     * @brief Register a lambda as a task.
-     * @param sampling_time The execution rate of the lambda.
-     * @param func The function to execute.
-     */
+    /// Register a lambda as a task.
     void register_lambda(duration_t sampling_time, std::function<void()> func);
 
-    /**
-     * @brief Initialize all tasks and prepare the schedule.
-     */
+    /// Initialize all tasks and prepare the schedule.
     void initialize();
 
-    /**
-     * @brief Stop all tasks.
-     */
+    /// Stop all tasks.
     void stop();
 
-    /**
-     * @brief Advance the simulation by a specified number of steps.
-     * @param current_tick The starting tick count.
-     * @param steps Number of steps to execute.
-     */
+    /// Advance the simulation by a specified number of steps.
     void run_steps(std::size_t current_tick, std::size_t steps);
 
-    /**
-     * @brief Get the base tick period (the fastest sampling rate).
-     * @return Base duration.
-     */
+    /// Get the base tick period (the fastest sampling rate).
     duration_t get_base_period() const;
 
 private:
-    /**
-     * @brief Normalizes task rates and builds the optimized task groups.
-     */
+    /// Normalizes task rates and builds the optimized task groups.
     void rebuild_schedule();
 
     void sort_task_buffer_and_update_base_period();

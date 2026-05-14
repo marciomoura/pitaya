@@ -5,27 +5,16 @@
 
 namespace pitaya {
 
-/**
- * @brief
- *
- * The Runge-Kutta 4th order method is a widely used numerical technique for solving
- * ordinary differential equations of the form: dy/dt = f(y, t)
- *
- * This implementation provides a generic way to integrate any system of differential
- * equations represented in state-space form, with accuracy of order O(h⁴).
- */
+/// Runge-Kutta 4th order method for numerical integration.
+///
+/// The Runge-Kutta 4th order method is a widely used numerical technique for solving
+/// ordinary differential equations of the form: dy/dt = f(y, t)
+///
+/// This implementation provides a generic way to integrate any system of differential
+/// equations represented in state-space form, with accuracy of order O(h⁴).
 class range_kutta_derivative {
 public:
-    /**
-     * @brief Performs a single RK4 integration step on the given system state
-     *
-     * @tparam StateT            Type representing the full state of the system
-     * @tparam DerivativeFunc    Function type that computes state derivatives
-     * @param states             Current system state
-     * @param calculate_derivatives Function that computes state derivatives (dy/dt) given a state
-     * @param dt                 Integration time step
-     * @return StateT            Updated system state after time step dt
-     */
+    /// Performs a single RK4 integration step on the given system state.
     template <typename StateT, typename DerivativeFunc>
     static StateT calculate(StateT states, DerivativeFunc calculate_derivatives, double dt)
     {

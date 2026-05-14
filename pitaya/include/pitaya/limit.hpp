@@ -8,30 +8,31 @@
 
 namespace pitaya {
 
-// Result type for operations that need to report limiting status
+/// Result type for operations that report limiting status.
 template <typename T>
 struct limit_result {
-    T value;           // The limited value
-    bool was_limited;  // True if the value was modified
+    T value;           ///< The limited value
+    bool was_limited;  ///< True if the value was modified
 };
 
+/// Utilities for value limiting and saturation.
 template <typename T>
 class limit {
 public:
-    // Limits a value to be at or below a maximum threshold
+    /// Limits a value to be at or below a maximum threshold.
     static T upper(T value, T max_value) { return std::min(value, max_value); }
 
-    // Limits a value to be at or above a minimum threshold
+    /// Limits a value to be at or above a minimum threshold.
     static T lower(T value, T min_value) { return std::max(value, min_value); }
 
-    // Limits a value to be within a range [min_value, max_value]
+    /// Limits a value to be within a range [min_value, max_value].
     static T range(T value, T min_value, T max_value)
     {
-        assert(max_value > min_value && "Wrong range limits");
+        assert(max_value > min_value && "Upper limit must be greater than lower limit");
         return std::min(std::max(value, min_value), max_value);
     }
 
-    // Detects if a value exceeds the upper limit without performing any limiting
+    /// Detects if a value exceeds the upper limit without performing any limiting.
     static bool is_above_upper_limit(T value, T max_value)
     {
         if constexpr (std::is_floating_point_v<T> || mojito::internal::is_quantity<T>::value) {
@@ -48,7 +49,7 @@ public:
         }
     }
 
-    // Range limiting with status reporting using epsilon comparison
+    /// Range limiting with status reporting using epsilon comparison.
     static limit_result<T> range_with_status(T value, T min_value, T max_value)
     {
         T original = value;
@@ -67,8 +68,7 @@ public:
         }
     }
 
-    // Range limiting with upper limit status reporting
-    // Returns true in was_limited only if the upper limit was hit
+    /// Range limiting with upper limit status reporting.
     static limit_result<T> range_with_upper_limit_status(T value, T min_value, T max_value)
     {
         T limited = range(value, min_value, max_value);
@@ -89,8 +89,6 @@ public:
 
         return {limited, hit_upper_limit};
     }
-
-private:
 };
 
 }  // namespace pitaya

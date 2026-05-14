@@ -7,46 +7,31 @@
 
 namespace pitaya {
 
-/**
- * @brief Interface for a task that can be executed within the simulation framework.
- */
+/// Interface for a task that can be executed within the simulation framework.
 class simulation_task {
 public:
     virtual ~simulation_task() = default;
 
-    /**
-     * @brief Get the sampling time of this task.
-     * @return Sampling time as a duration.
-     */
+    /// Get the sampling time of this task.
     virtual duration_t get_sampling_time() const = 0;
 
-    /**
-     * @brief Run the task logic.
-     */
+    /// Run the task logic.
     virtual void run() = 0;
 
-    /**
-     * @brief Initialize the task before simulation starts.
-     * Default implementation does nothing.
-     */
+    /// Initialize the task before simulation starts.
     virtual void initialize() {}
 
-    /**
-     * @brief Stop the task when simulation ends.
-     * Default implementation does nothing.
-     */
+    /// Stop the task when simulation ends.
     virtual void stop() {}
 };
 
-/**
- * @brief A simulation task that wraps a lambda or function object.
- */
+/// Simulation task that wraps a lambda or function object.
 class lambda_task : public simulation_task {
 public:
     lambda_task(duration_t sampling_time,
-                std::function<void()> run,
-                std::function<void()> initialize = {},
-                std::function<void()> stop = {})
+        std::function<void()> run,
+        std::function<void()> initialize = {},
+        std::function<void()> stop = {})
         : _sampling_time(sampling_time),
           _run_func(std::move(run)),
           _initialize_func(std::move(initialize)),

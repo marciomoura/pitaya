@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mojito/mojito.hpp>
+
 #include "pitaya/integrator.hpp"
 #include "pitaya/pi_controller.hpp"
 #include "pitaya/second_order_filter.hpp"
@@ -8,13 +9,11 @@
 
 namespace pitaya {
 
-/**
- * @brief Synchronous-Reference Frame Phase-Locked Loop (SRF-PLL)
- */
+/// Synchronous-Reference Frame Phase-Locked Loop (SRF-PLL).
 class srf_pll {
 public:
     struct pi_gains {
-        real_t kp;      // Proportional gain
+        real_t kp;              // Proportional gain
         mojito::duration_t ti;  // Integral time constant
     };
 
@@ -32,10 +31,12 @@ public:
 
     void reset(mojito::frequency_pu_t initial_frequency);
 
-    void preset(mojito::angle_wrapped preset_angle, mojito::frequency_pu_t preset_frequency = mojito::frequency_pu_t{1.0f});
+    void preset(
+        mojito::angle_wrapped preset_angle, mojito::frequency_pu_t preset_frequency = mojito::frequency_pu_t{1.0f});
 
-    void preset_for_bumpless_transfer(
-        mojito::angle_wrapped preset_angle, mojito::frequency_pu_t preset_frequency, const mojito::alphabeta<mojito::voltage_pu_t>& input_alphabeta);
+    void preset_for_bumpless_transfer(mojito::angle_wrapped preset_angle,
+        mojito::frequency_pu_t preset_frequency,
+        const mojito::alphabeta<mojito::voltage_pu_t>& input_alphabeta);
 
     void update(const mojito::alphabeta<mojito::voltage_pu_t>& input_alphabeta);
 
@@ -60,7 +61,7 @@ private:
 
     mojito::frequency_pu_t _initial_frequency{mojito::frequency_pu_t{1.0f}};
     mojito::frequency_t _nominal_frequency{mojito::frequency_t{50.0f}};
-    
+
     mojito::frequency_t _estimated_frequency{mojito::frequency_t{50.0f}};
     mojito::dq<mojito::voltage_pu_t> _dq_vector{};
 };
