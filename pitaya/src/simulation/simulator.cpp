@@ -17,6 +17,16 @@ void simulator::register_lambda(duration_t sampling_time, std::function<void()> 
     _scheduler.register_lambda(sampling_time, std::move(func));
 }
 
+void simulator::register_assertion(std::unique_ptr<simulation_assertion> assertion)
+{
+    _assertions.push_back(std::move(assertion));
+}
+
+void simulator::on_assertion_failure(std::function<void(const std::string&)> callback)
+{
+    _on_assertion_failure = std::move(callback);
+}
+
 void simulator::set_logging_period(duration_t period) { _logging_period = period; }
 
 void simulator::enable_logging(bool enable) { _logging_enabled = enable; }
@@ -77,7 +87,20 @@ void simulator::run_step()
     // 2. Execute tasks for this tick
     _scheduler.run_steps(_current_tick, 1);
 
-    // 3. Increment tick
+    // 3. Evaluate assertions (after update)
+    duration_t current_time = get_current_simulation_time();
+    for (const auto& assertion : _assertions) {
+        if (assertion->is_active(current_time)) {
+            auto result = assertion->evaluate();
+            if (!result.success && _on_assertion_failure) {
+                std::string msg = "Assertion '" + assertion->get_name() + "' failed at " +
+                                  std::to_string(current_time.value()) + "s: " + result.message;
+                _on_assertion_failure(msg);
+            }
+        }
+    }
+
+    // 4. Increment tick
     _current_tick++;
 }
 
