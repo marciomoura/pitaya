@@ -15,12 +15,12 @@ namespace pitaya {
  * @brief Helper function to automatically export simulator data using the active Google Test name.
  *
  * Extracts the test suite and test case name from Google Test and saves the
- * simulation data to a binary file named `<TestSuite>_<TestCase>.bin`.
+ * simulation data to a CSV file named `<TestSuite>_<TestCase>.csv`.
  *
  * @param sim The simulator containing the logged data.
  * @param output_directory Directory where the file will be saved.
  */
-inline void export_to_binary_gtest(const simulator& sim, const std::filesystem::path& output_directory = ".")
+inline void export_to_csv_gtest(const simulator& sim, const std::filesystem::path& output_directory = ".")
 {
     const auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     if (!test_info) {
@@ -33,9 +33,9 @@ inline void export_to_binary_gtest(const simulator& sim, const std::filesystem::
 
     std::string suite_name = test_info->test_suite_name();
     std::string test_name = test_info->name();
-    std::string filename = suite_name + "_" + test_name + ".bin";
+    std::string filename = suite_name + "_" + test_name + ".csv";
     std::filesystem::path export_path = output_directory / filename;
-    export_to_binary(sim, export_path);
+    export_to_csv(sim, export_path);
 }
 
 /**
@@ -51,7 +51,7 @@ public:
     {
     }
 
-    ~gtest_exporter() { export_to_binary_gtest(_sim, _output_directory); }
+    ~gtest_exporter() { export_to_csv_gtest(_sim, _output_directory); }
 
     // Disable copying
     gtest_exporter(const gtest_exporter&) = delete;

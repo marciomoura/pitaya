@@ -1,10 +1,11 @@
-import struct
+import csv
 import numpy as np
 import os
+import re
 
 class PitayaDataLoader:
     """
-    A class to load and access simulation data exported by the Pitaya library.
+    A class to load and access simulation data exported by the Pitaya library in CSV format.
     """
     def __init__(self, file_path):
         self.file_path = file_path
@@ -16,65 +17,63 @@ class PitayaDataLoader:
         self.load()
 
     def load(self):
-        """Loads the binary data from the file."""
+        """Loads the CSV data from the file."""
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
-        with open(self.file_path, 'rb') as f:
-            # Header
-            magic = f.read(4)
-            if magic != b'PTYA':
-                raise ValueError("Not a valid Pitaya binary file")
-            
-            self.version, = struct.unpack('I', f.read(4))
-            if self.version not in [1, 2]:
-                raise ValueError(f"Unsupported Pitaya binary version: {self.version}")
+        with open(self.file_path, 'r') as f:
+            lines = f.readlines()
 
-            self.num_signals, = struct.unpack('I', f.read(4))
-            self.num_samples, = struct.unpack('I', f.read(4))
+        # Parse Metadata from comments
+        signal_metas = []
+        data_start_line = 0
+        
+        for i, line in enumerate(lines):
+            if not line.startswith('#'):
+                data_start_line = i
+                break
             
-            # Metadata
-            signals = []
-            for _ in range(self.num_signals):
-                # Name
-                name_len, = struct.unpack('I', f.read(4))
-                name = f.read(name_len).decode('utf-8')
-                
-                group = "General"
-                row = 0
-                col = 0
-                
-                if self.version >= 2:
-                    # Group
-                    group_len, = struct.unpack('I', f.read(4))
-                    group = f.read(group_len).decode('utf-8')
-                    # Row/Col
-                    row, = struct.unpack('I', f.read(4))
-                    col, = struct.unpack('I', f.read(4))
+            if "PTYA_CSV_VERSION" in line:
+                self.version = int(line.split(':')[-1].strip())
+            
+            if "SIGNAL:" in line:
+                # Use regex to parse: # SIGNAL: name=sine, group=General, row=0, col=0, dim=1
+                match = re.search(r"name=(?P<name>[^,]+),\s*group=(?P<group>[^,]+),\s*row=(?P<row>\d+),\s*col=(?P<col>\d+),\s*dim=(?P<dim>\d+)", line)
+                if match:
+                    meta = {
+                        'name': match.group('name').strip(),
+                        'group': match.group('group').strip(),
+                        'row': int(match.group('row')),
+                        'col': int(match.group('col')),
+                        'dimension': int(match.group('dim'))
+                    }
+                    signal_metas.append(meta)
+                    self.metadata[meta['name']] = meta
 
-                # Dimension
-                dimension, = struct.unpack('I', f.read(4))
+        self.num_signals = len(signal_metas)
+        
+        # Parse column names and data
+        reader = csv.DictReader(lines[data_start_line:])
+        
+        # Initialize data lists
+        temp_data = {meta['name']: [] for meta in signal_metas}
+        
+        for row in reader:
+            self.num_samples += 1
+            for meta in signal_metas:
+                name = meta['name']
+                dim = meta['dimension']
                 
-                sig_meta = {
-                    'name': name, 
-                    'group': group, 
-                    'row': row, 
-                    'col': col, 
-                    'dimension': dimension
-                }
-                signals.append(sig_meta)
-                self.metadata[name] = sig_meta
-                
-            # Data
-            for sig in signals:
-                count = self.num_samples * sig['dimension']
-                raw_data = struct.unpack(f'{count}f', f.read(count * 4))
-                
-                arr = np.array(raw_data)
-                if sig['dimension'] > 1:
-                    arr = arr.reshape((self.num_samples, sig['dimension']))
-                
-                self.data[sig['name']] = arr
+                if dim == 1:
+                    temp_data[name].append(float(row[name]))
+                else:
+                    # Multi-dimensional signal is stored as name_0, name_1, ...
+                    sample = [float(row[f"{name}_{d}"]) for d in range(dim)]
+                    temp_data[name].append(sample)
+
+        # Convert to numpy arrays
+        for name, values in temp_data.items():
+            self.data[name] = np.array(values)
 
     def get_signal(self, name):
         """Returns the data for a given signal name."""

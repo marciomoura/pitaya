@@ -26,7 +26,7 @@ protected:
     std::filesystem::path temp_dir;
 };
 
-TEST_F(DataExporterTest, ExportToBinaryV2AndReadBack)
+TEST_F(DataExporterTest, ExportToCSVAndReadBack)
 {
     simulator sim;
     sim.register_lambda(duration_t(0.001), []() {});
@@ -38,64 +38,33 @@ TEST_F(DataExporterTest, ExportToBinaryV2AndReadBack)
     sim.initialize();
     sim.simulate_steps(1);
 
-    std::filesystem::path bin_path = temp_dir / "test_v2.bin";
-    export_to_binary(sim, bin_path);
+    std::filesystem::path csv_path = temp_dir / "test.csv";
+    export_to_csv(sim, csv_path);
 
-    ASSERT_TRUE(std::filesystem::exists(bin_path));
+    ASSERT_TRUE(std::filesystem::exists(csv_path));
 
-    std::ifstream ifs(bin_path, std::ios::binary);
-    char magic[4];
-    ifs.read(magic, 4);
+    std::ifstream ifs(csv_path);
+    std::string line;
 
-    uint32_t version;
-    ifs.read(reinterpret_cast<char*>(&version), sizeof(version));
-    EXPECT_EQ(version, 2);
+    // Check version
+    std::getline(ifs, line);
+    EXPECT_TRUE(line.find("PTYA_CSV_VERSION: 1") != std::string::npos);
 
-    uint32_t num_signals;
-    ifs.read(reinterpret_cast<char*>(&num_signals), sizeof(num_signals));
-    EXPECT_EQ(num_signals, 2);  // "time" + "signal1"
+    // Check metadata for "time"
+    std::getline(ifs, line);
+    EXPECT_TRUE(line.find("SIGNAL: name=time, group=General, row=0, col=0, dim=1") != std::string::npos);
 
-    uint32_t num_samples;
-    ifs.read(reinterpret_cast<char*>(&num_samples), sizeof(num_samples));
-    EXPECT_EQ(num_samples, 1);
+    // Check metadata for "signal1"
+    std::getline(ifs, line);
+    EXPECT_TRUE(line.find("SIGNAL: name=signal1, group=CustomGroup, row=1, col=2, dim=1") != std::string::npos);
 
-    // Metadata for "time"
-    uint32_t len;
-    ifs.read(reinterpret_cast<char*>(&len), sizeof(len));
-    std::string name(len, ' ');
-    ifs.read(&name[0], len);
-    EXPECT_EQ(name, "time");
+    // Check column names
+    std::getline(ifs, line);
+    EXPECT_EQ(line, "time,signal1");
 
-    ifs.read(reinterpret_cast<char*>(&len), sizeof(len));  // group len
-    std::string group(len, ' ');
-    ifs.read(&group[0], len);
-    EXPECT_EQ(group, "General");
-
-    uint32_t row, col, dim;
-    ifs.read(reinterpret_cast<char*>(&row), sizeof(row));
-    ifs.read(reinterpret_cast<char*>(&col), sizeof(col));
-    ifs.read(reinterpret_cast<char*>(&dim), sizeof(dim));
-    EXPECT_EQ(row, 0);
-    EXPECT_EQ(col, 0);
-    EXPECT_EQ(dim, 1);
-
-    // Metadata for "signal1"
-    ifs.read(reinterpret_cast<char*>(&len), sizeof(len));
-    name.resize(len);
-    ifs.read(&name[0], len);
-    EXPECT_EQ(name, "signal1");
-
-    ifs.read(reinterpret_cast<char*>(&len), sizeof(len));
-    group.resize(len);
-    ifs.read(&group[0], len);
-    EXPECT_EQ(group, "CustomGroup");
-
-    ifs.read(reinterpret_cast<char*>(&row), sizeof(row));
-    ifs.read(reinterpret_cast<char*>(&col), sizeof(col));
-    ifs.read(reinterpret_cast<char*>(&dim), sizeof(dim));
-    EXPECT_EQ(row, 1);
-    EXPECT_EQ(col, 2);
-    EXPECT_EQ(dim, 1);
+    // Check data
+    std::getline(ifs, line);
+    EXPECT_TRUE(line.find("0,1") != std::string::npos);
 }
 
 }  // namespace pitaya

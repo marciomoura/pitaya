@@ -46,6 +46,51 @@ int main() {
 
 ---
 
+## 📊 Simulation and Reporting
+
+Pitaya includes a lightweight simulation orchestrator and a reporting generation script. You can log signals during a test and automatically generate interactive HTML plots and CSV spreadsheets.
+
+### 1. Logging in Tests
+Use the `simulator` and `gtest_exporter` to record and export your data automatically when the test finishes:
+
+```cpp
+#include <pitaya/simulation/simulator.hpp>
+#include <pitaya/simulation/gtest_data_exporter.hpp>
+
+TEST(MySimulation, TestRun) {
+    pitaya::simulator sim;
+    
+    // 1. Set a base simulation rate via a task
+    sim.register_lambda(pitaya::duration_t(100e-6), []() { /* task logic */ });
+    
+    // 2. Register signals to log
+    sim.register_signal("my_signal", [&]() { return 42.0f; });
+    
+    sim.initialize();
+    
+    // 3. Instantiate the exporter (saves data to .csv)
+    pitaya::gtest_exporter exporter(sim);
+    
+    // 4. Run the simulation
+    sim.simulate_for(pitaya::duration_t(0.1)); // 100ms
+}
+```
+
+### 2. Generating Reports
+After running your tests, you can generate the interactive reports using the built-in CMake targets. The artifacts will be collected in the `reports/` folder of your build directory.
+
+```powershell
+# 1. Run your specific test to generate the raw data
+ctest --preset host-clang-test -R MySimulation.TestRun
+
+# 2. Generate the HTML report from the existing data
+cmake --build build-host --target generate_report
+```
+
+You can then find your interactive HTML report, along with the raw `.csv` file, under `build-host/reports/`.
+
+---
+
 ## 🛠️ Development
 
 ### Prerequisites
