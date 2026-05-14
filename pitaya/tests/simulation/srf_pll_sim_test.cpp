@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "pitaya/simulation/gtest_data_exporter.hpp"
+#include "pitaya/simulation/gtest_simulator.hpp"
 #include "pitaya/simulation/simulator.hpp"
 #include "pitaya/srf_pll.hpp"
 
@@ -38,10 +39,26 @@ protected:
         sim.register_signal("reference_angle", [this]() { return ref_angle.get_radians(); });
         sim.register_signal("measured_angle", [this]() { return pll.get_estimated_angle().get_radians(); });
 
+        // Assertions
+        sim.register_assertion(make_near_assert<float>(
+            "frequency_lock", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.2f,
+            time_range(duration_t{0.15}, duration_t{0.2})));
+
+        sim.register_assertion(make_lambda_assert(
+            "angle_lock",
+            [this]() {
+                float diff = std::abs((pll.get_estimated_angle() - ref_angle).get_radians().value());
+                if (diff > 0.1f) {
+                    return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
+                }
+                return assertion_result::pass();
+            },
+            time_range(duration_t{0.15}, duration_t{0.2})));
+
         sim.initialize();
     }
 
-    simulator sim;
+    simulator sim = make_gtest_simulator();
     srf_pll pll{duration_t{100e-6}};
     abc<voltage_pu_t> v_abc{voltage_pu_t{0.0f}, voltage_pu_t{0.0f}, voltage_pu_t{0.0f}};
     angle_wrapped ref_angle{0.0f};

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include "pitaya/simulation/assertion.hpp"
 #include "pitaya/simulation/data_logger.hpp"
 #include "pitaya/simulation/data_logger_utils.hpp"
 #include "pitaya/simulation/task_scheduler.hpp"
@@ -20,6 +21,12 @@ public:
 
     /// Register a lambda task with the simulation.
     void register_lambda(duration_t sampling_time, std::function<void()> func);
+
+    /// Register a test assertion with the simulation.
+    void register_assertion(std::unique_ptr<simulation_assertion> assertion);
+
+    /// Set a callback to be called when an assertion fails.
+    void on_assertion_failure(std::function<void(const std::string&)> callback);
 
     /// Register a signal for logging with explicit metadata.
     template <typename Func>
@@ -82,6 +89,8 @@ private:
 
     task_scheduler _scheduler;
     data_logger _logger;
+    std::vector<std::unique_ptr<simulation_assertion>> _assertions;
+    std::function<void(const std::string&)> _on_assertion_failure;
     std::size_t _current_tick{0};
 
     duration_t _logging_period{0.0};

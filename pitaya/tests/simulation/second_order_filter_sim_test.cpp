@@ -2,6 +2,7 @@
 
 #include "pitaya/second_order_filter.hpp"
 #include "pitaya/simulation/gtest_data_exporter.hpp"
+#include "pitaya/simulation/gtest_simulator.hpp"
 #include "pitaya/simulation/simulator.hpp"
 
 namespace {
@@ -23,10 +24,18 @@ protected:
         sim.register_signal("input", [this]() { return input.value(); });
         sim.register_signal("output", [this]() { return output.value(); });
 
+        // Assertions
+        sim.register_assertion(make_near_assert<voltage_pu_t>(
+            "steady_state", [this]() { return output; }, voltage_pu_t{1.0f}, voltage_pu_t{0.01f},
+            time_range(duration_t{0.4}, duration_t{0.5})));
+
+        sim.register_assertion(make_max_assert<voltage_pu_t>(
+            "max_overshoot", [this]() { return output; }, voltage_pu_t{1.05f}, always_active()));
+
         sim.initialize();
     }
 
-    simulator sim;
+    simulator sim = make_gtest_simulator();
     second_order_low_pass_filter<voltage_pu_t> filter{100e-6};
     voltage_pu_t input{0.0f};
     voltage_pu_t output{0.0f};

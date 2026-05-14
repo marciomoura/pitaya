@@ -18,6 +18,8 @@ target_sources(
           task_scheduler.hpp
           data_exporter.hpp
           gtest_data_exporter.hpp
+          assertion.hpp
+          gtest_simulator.hpp
 )
 
 # Conditional GTest support
