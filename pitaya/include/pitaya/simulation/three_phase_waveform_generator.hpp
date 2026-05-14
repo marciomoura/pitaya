@@ -112,24 +112,36 @@ public:
 
     void set_angle(mojito::angle_wrapped angle) { _fundamental_signal_angle = {angle, angle, angle}; }
 
-    void set_amplitude_step(real_t amplitude, real_t time)
+    struct step_config {
+        real_t time{};
+        real_t value{};
+    };
+
+    void set_amplitude_step(const step_config& config)
     {
-        _step_amplitude = generator_step<mojito::abc<real_t>>{time, {amplitude, amplitude, amplitude}};
+        _step_amplitude = generator_step<mojito::abc<real_t>>{config.time, {config.value, config.value, config.value}};
     }
 
-    void set_frequency_step(real_t frequency, real_t time)
+    void set_frequency_step(const step_config& config)
     {
-        _frequency_step = generator_step<real_t>{time, frequency};
+        _frequency_step = generator_step<real_t>{config.time, config.value};
     }
 
-    void set_angle_step(mojito::angle_wrapped angle, real_t time)
+    void set_angle_step(real_t time, mojito::angle_wrapped angle)
     {
         _angle_step = generator_step<mojito::abc<mojito::angle_wrapped>>{time, {angle, angle, angle}};
     }
 
-    void set_frequency_rate_of_change(real_t delta, real_t start_time, real_t end_time)
+    struct frequency_roc_config {
+        real_t delta{};
+        real_t start_time{};
+        real_t end_time{};
+    };
+
+    void set_frequency_rate_of_change(const frequency_roc_config& config)
     {
-        _rate_of_change_frequency = generator_step_rate_of_change<real_t>{start_time, end_time, delta};
+        _rate_of_change_frequency =
+            generator_step_rate_of_change<real_t>{config.start_time, config.end_time, config.delta};
     }
 
 private:

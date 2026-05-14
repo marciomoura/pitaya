@@ -78,30 +78,30 @@ TEST_F(ThresholdProtectionSimTest, DynamicBehavior)
 {
     // Assertions
     // 1. Noise immunity: No trip on short spike at 0.1s
-    sim.register_assertion(make_lambda_assert(
-        "no_spike_trip",
-        [this]() {
-            return !protection.is_tripped() ? assertion_result::pass()
-                                            : assertion_result::fail("Tripped on short spike");
-        },
-        time_range(duration_t{0.1}, duration_t{0.15})));
+    sim.register_assertion(make_lambda_assert({.name = "no_spike_trip",
+        .func =
+            [this]() {
+                return !protection.is_tripped() ? assertion_result::pass()
+                                                : assertion_result::fail("Tripped on short spike");
+            },
+        .strategy = time_range({.start = duration_t{0.1}, .end = duration_t{0.15}})}));
 
     // 2. Trip verification: Must trip after 50ms of sustained 1.6 pu overcurrent
-    sim.register_assertion(make_lambda_assert(
-        "sustained_trip",
-        [this]() {
-            return protection.is_tripped() ? assertion_result::pass()
-                                           : assertion_result::fail("Failed to trip on sustained overcurrent");
-        },
-        time_range(duration_t{0.26}, duration_t{0.4})));
+    sim.register_assertion(make_lambda_assert({.name = "sustained_trip",
+        .func =
+            [this]() {
+                return protection.is_tripped() ? assertion_result::pass()
+                                               : assertion_result::fail("Failed to trip on sustained overcurrent");
+            },
+        .strategy = time_range({.start = duration_t{0.26}, .end = duration_t{0.4}})}));
 
     // 3. Reset verification: Manual reset at 0.55s must clear the trip
-    sim.register_assertion(make_lambda_assert(
-        "reset_works",
-        [this]() {
-            return !protection.is_tripped() ? assertion_result::pass() : assertion_result::fail("Failed to reset");
-        },
-        time_range(duration_t{0.6}, duration_t{0.7})));
+    sim.register_assertion(make_lambda_assert({.name = "reset_works",
+        .func =
+            [this]() {
+                return !protection.is_tripped() ? assertion_result::pass() : assertion_result::fail("Failed to reset");
+            },
+        .strategy = time_range({.start = duration_t{0.6}, .end = duration_t{0.7}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.7));

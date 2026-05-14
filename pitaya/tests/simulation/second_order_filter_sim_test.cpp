@@ -47,13 +47,17 @@ TEST_F(SecondOrderFilterSimTest, StepResponse)
 {
     // Assertions
     // 1. Steady state verification
-    sim.register_assertion(make_near_assert<voltage_pu_t>(
-        "steady_state", [this]() { return output; }, voltage_pu_t{1.0f}, voltage_pu_t{0.01f},
-        time_range(duration_t{0.4}, duration_t{0.5})));
+    sim.register_assertion(make_near_assert<voltage_pu_t>({.name = "steady_state",
+        .func = [this]() { return output; },
+        .expected = voltage_pu_t{1.0f},
+        .epsilon = voltage_pu_t{0.01f},
+        .strategy = time_range({.start = duration_t{0.4}, .end = duration_t{0.5}})}));
 
     // 2. Max overshoot verification
-    sim.register_assertion(make_max_assert<voltage_pu_t>(
-        "max_overshoot", [this]() { return output; }, voltage_pu_t{1.05f}, always_active()));
+    sim.register_assertion(make_max_assert<voltage_pu_t>({.name = "max_overshoot",
+        .func = [this]() { return output; },
+        .max = voltage_pu_t{1.05f},
+        .strategy = always_active()}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.5));
@@ -85,9 +89,11 @@ TEST_F(SecondOrderFilterSimTest, BandRejectResponse)
     sim.register_signal("output", [&]() { return notch_output.value(); });
 
     // Assertion: At 100Hz notch, output should be heavily attenuated (< 0.1 pu)
-    sim.register_assertion(make_range_assert<voltage_pu_t>(
-        "notch_attenuation", [&]() { return notch_output; }, voltage_pu_t{-0.1f}, voltage_pu_t{0.1f},
-        time_range(duration_t{0.1}, duration_t{0.2})));
+    sim.register_assertion(make_range_assert<voltage_pu_t>({.name = "notch_attenuation",
+        .func = [&]() { return notch_output; },
+        .min = voltage_pu_t{-0.1f},
+        .max = voltage_pu_t{0.1f},
+        .strategy = time_range({.start = duration_t{0.1}, .end = duration_t{0.2}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.2));

@@ -76,14 +76,18 @@ TEST_F(PIControllerSimTest, ClosedLoopResponse)
 
     // Assertions
     // 1. Tracking: Should reach 1.0 after step at 0.1s
-    sim.register_assertion(make_near_assert<float>(
-        "tracking_steady_state", [this]() { return measured_output; }, 1.0f, 0.02f,
-        time_range(duration_t{0.8}, duration_t{0.9})));
+    sim.register_assertion(make_near_assert<float>({.name = "tracking_steady_state",
+        .func = [this]() { return measured_output; },
+        .expected = 1.0f,
+        .epsilon = 0.02f,
+        .strategy = time_range({.start = duration_t{0.8}, .end = duration_t{0.9}})}));
 
     // 2. Disturbance rejection: Should return to 1.0 after disturbance at 1.0s
-    sim.register_assertion(make_near_assert<float>(
-        "disturbance_rejection", [this]() { return measured_output; }, 1.0f, 0.02f,
-        time_range(duration_t{1.8}, duration_t{1.9})));
+    sim.register_assertion(make_near_assert<float>({.name = "disturbance_rejection",
+        .func = [this]() { return measured_output; },
+        .expected = 1.0f,
+        .epsilon = 0.02f,
+        .strategy = time_range({.start = duration_t{1.8}, .end = duration_t{1.9}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(2.0));
@@ -106,8 +110,10 @@ TEST_F(PIControllerSimTest, AntiWindupSaturating)
     });
 
     // Assertion: Output must not exceed the limit of 2.0
-    sim.register_assertion(
-        make_max_assert<float>("output_clamped", [this]() { return controller_output; }, 2.01f, always_active()));
+    sim.register_assertion(make_max_assert<float>({.name = "output_clamped",
+        .func = [this]() { return controller_output; },
+        .max = 2.01f,
+        .strategy = always_active()}));
 
     sim.initialize();
     sim.simulate_for(duration_t(1.0));

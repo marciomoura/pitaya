@@ -62,23 +62,25 @@ TEST_F(SrfPllSimTest, LockedResponse)
 {
     // Assertions
     // 1. Frequency lock verification
-    sim.register_assertion(make_near_assert<float>(
-        "frequency_lock", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.2f,
-        time_range(duration_t{0.15}, duration_t{0.2})));
+    sim.register_assertion(make_near_assert<float>({.name = "frequency_lock",
+        .func = [this]() { return pll.get_estimated_frequency().value(); },
+        .expected = 50.0f,
+        .epsilon = 0.2f,
+        .strategy = time_range({.start = duration_t{0.15}, .end = duration_t{0.2}})}));
 
     // 2. Phase lock verification (Angle error < 0.1 rad)
-    sim.register_assertion(make_lambda_assert(
-        "angle_lock",
-        [this]() {
-            float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
-            if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
-            float diff = std::abs(diff_rad);
-            if (diff > 0.1f) {
-                return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
-            }
-            return assertion_result::pass();
-        },
-        time_range(duration_t{0.15}, duration_t{0.2})));
+    sim.register_assertion(make_lambda_assert({.name = "angle_lock",
+        .func =
+            [this]() {
+                float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
+                if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
+                float diff = std::abs(diff_rad);
+                if (diff > 0.1f) {
+                    return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
+                }
+                return assertion_result::pass();
+            },
+        .strategy = time_range({.start = duration_t{0.15}, .end = duration_t{0.2}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.2));
@@ -91,12 +93,14 @@ TEST_F(SrfPllSimTest, LockedResponse)
 /// after a short transient.
 TEST_F(SrfPllSimTest, FrequencyStep)
 {
-    gen.set_frequency_step(10.0f, 0.5f);  // 50Hz -> 60Hz at 0.5s
+    gen.set_frequency_step({.time = 0.5f, .value = 10.0f});  // 50Hz -> 60Hz at 0.5s
 
     // Assertion: PLL should track 60Hz after step
-    sim.register_assertion(make_near_assert<float>(
-        "frequency_after_step", [this]() { return pll.get_estimated_frequency().value(); }, 60.0f, 0.5f,
-        time_range(duration_t{0.8}, duration_t{1.0})));
+    sim.register_assertion(make_near_assert<float>({.name = "frequency_after_step",
+        .func = [this]() { return pll.get_estimated_frequency().value(); },
+        .expected = 60.0f,
+        .epsilon = 0.5f,
+        .strategy = time_range({.start = duration_t{0.8}, .end = duration_t{1.0}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(1.0));
@@ -109,22 +113,22 @@ TEST_F(SrfPllSimTest, FrequencyStep)
 /// with the new phase angle.
 TEST_F(SrfPllSimTest, PhaseStep)
 {
-    gen.set_angle_step(angle_wrapped::from_radians(angle_t{static_cast<float>(mojito::pi / 4.0)}),
-        0.5f);  // +45 deg jump
+    gen.set_angle_step(
+        0.5f, angle_wrapped::from_radians(angle_t{static_cast<float>(mojito::pi / 4.0)}));  // +45 deg jump
 
     // Assertion: PLL should re-lock onto the phase angle after the jump
-    sim.register_assertion(make_lambda_assert(
-        "angle_lock_after_jump",
-        [this]() {
-            float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
-            if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
-            float diff = std::abs(diff_rad);
-            if (diff > 0.1f) {
-                return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
-            }
-            return assertion_result::pass();
-        },
-        time_range(duration_t{0.8}, duration_t{1.0})));
+    sim.register_assertion(make_lambda_assert({.name = "angle_lock_after_jump",
+        .func =
+            [this]() {
+                float diff_rad = (pll.get_estimated_angle() - ref_angle).get_radians().value();
+                if (diff_rad > mojito::pi) diff_rad -= 2.0f * mojito::pi;
+                float diff = std::abs(diff_rad);
+                if (diff > 0.1f) {
+                    return assertion_result::fail("Angle error " + std::to_string(diff) + " rad exceeds 0.1 rad");
+                }
+                return assertion_result::pass();
+            },
+        .strategy = time_range({.start = duration_t{0.8}, .end = duration_t{1.0}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(1.0));
