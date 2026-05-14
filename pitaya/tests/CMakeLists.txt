@@ -17,7 +17,9 @@ add_executable(
     derivative_test.cpp
     integrator_test.cpp
     first_order_low_pass_filter_test.cpp
-    second_order_filter_test.cpp
+    second_order_low_pass_filter_test.cpp
+    second_order_band_reject_filter_test.cpp
+    second_order_high_pass_filter_test.cpp
     hardware_filter_compensator_test.cpp
     pi_controller_test.cpp
     sogi_filter_test.cpp
@@ -37,7 +39,9 @@ if(PITAYA_ENABLE_SIMULATION)
                 simulation/data_exporter_test.cpp
                 simulation/simulation_report_demo.cpp
                 simulation/first_order_low_pass_filter_sim_test.cpp
-                simulation/second_order_filter_sim_test.cpp
+                simulation/second_order_low_pass_filter_sim_test.cpp
+                simulation/second_order_band_reject_filter_sim_test.cpp
+                simulation/second_order_high_pass_filter_sim_test.cpp
                 simulation/srf_pll_sim_test.cpp
                 simulation/pi_controller_sim_test.cpp
                 simulation/dual_sogi_srf_pll_sim_test.cpp
