@@ -35,3 +35,14 @@ target_link_libraries(pitaya_tests PRIVATE pitaya::pitaya GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(pitaya_tests)
+
+# Cross-platform target to generate simulation reports
+find_package(Python3 REQUIRED)
+add_custom_target(
+    generate_report
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/pitaya/tools/generate_report.py --executable
+            $<TARGET_FILE:pitaya_tests> --output-dir ${CMAKE_BINARY_DIR}/reports --headless
+    DEPENDS pitaya_tests
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running tests and generating interactive Plotly reports..."
+)
