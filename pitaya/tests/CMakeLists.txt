@@ -47,6 +47,10 @@ if(PITAYA_ENABLE_SIMULATION)
                 simulation/dual_sogi_srf_pll_sim_test.cpp
                 simulation/threshold_protection_sim_test.cpp
                 simulation/timing_logic_sim_test.cpp
+                simulation/derivative_sim_test.cpp
+                simulation/linear_ramp_sim_test.cpp
+                simulation/interval_timer_sim_test.cpp
+                simulation/rate_of_change_limiter_sim_test.cpp
     )
 
     target_link_libraries(pitaya_tests PRIVATE pitaya::simulation)
