@@ -15,6 +15,9 @@ __pycache__/
 *.swo
 *.lnk
 
+# File extension
+*.csv
+
 # Compiler and analysis
 .cache/
 .ccache*/
