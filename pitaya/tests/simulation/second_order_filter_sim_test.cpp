@@ -11,6 +11,11 @@ namespace {
 using namespace pitaya;
 using namespace mojito;
 
+/// @class SecondOrderFilterSimTest
+/// @brief Simulation tests for the second-order filters (Low-Pass and Band-Reject).
+///
+/// These tests verify the dynamic behavior and frequency response of second-order filters,
+/// focusing on step response (overshoot, steady-state) and notch attenuation.
 class SecondOrderFilterSimTest : public ::testing::Test {
 protected:
     void SetUp() override
@@ -24,30 +29,40 @@ protected:
 
         sim.register_signal("input", [this]() { return input.value(); });
         sim.register_signal("output", [this]() { return output.value(); });
-
-        // Assertions
-        sim.register_assertion(make_near_assert<voltage_pu_t>(
-            "steady_state", [this]() { return output; }, voltage_pu_t{1.0f}, voltage_pu_t{0.01f},
-            time_range(duration_t{0.4}, duration_t{0.5})));
-
-        sim.register_assertion(make_max_assert<voltage_pu_t>(
-            "max_overshoot", [this]() { return output; }, voltage_pu_t{1.05f}, always_active()));
-
-        sim.initialize();
     }
 
     simulator sim = make_gtest_simulator();
+
     second_order_low_pass_filter<voltage_pu_t> filter{100e-6};
     voltage_pu_t input{0.0f};
     voltage_pu_t output{0.0f};
 };
 
+/// @test StepResponse
+/// @brief Verifies the time-domain step response of the second-order low-pass filter.
+///
+/// Ensures the filter reaches steady-state and that overshoot remains within
+/// acceptable limits for a Butterworth-like (damping=0.707) response.
 TEST_F(SecondOrderFilterSimTest, StepResponse)
 {
-    gtest_exporter exporter(sim);
+    // Assertions
+    // 1. Steady state verification
+    sim.register_assertion(make_near_assert<voltage_pu_t>(
+        "steady_state", [this]() { return output; }, voltage_pu_t{1.0f}, voltage_pu_t{0.01f},
+        time_range(duration_t{0.4}, duration_t{0.5})));
+
+    // 2. Max overshoot verification
+    sim.register_assertion(make_max_assert<voltage_pu_t>(
+        "max_overshoot", [this]() { return output; }, voltage_pu_t{1.05f}, always_active()));
+
+    sim.initialize();
     sim.simulate_for(duration_t(0.5));
 }
 
+/// @test BandRejectResponse
+/// @brief Verifies the attenuation of a second-order band-reject (notch) filter.
+///
+/// Ensures that a signal at the notch frequency (100Hz) is heavily attenuated.
 TEST_F(SecondOrderFilterSimTest, BandRejectResponse)
 {
     second_order_band_reject_filter<voltage_pu_t> notch{100e-6};
@@ -57,27 +72,25 @@ TEST_F(SecondOrderFilterSimTest, BandRejectResponse)
     gen.set_fundamental_positive_sequence_signal_amplitude(1.0f);
     gen.set_signal_frequency(100.0f);
 
-    simulator notch_sim = make_gtest_simulator();
     voltage_pu_t notch_input{0.0f};
     voltage_pu_t notch_output{0.0f};
 
-    notch_sim.register_lambda(duration_t{100e-6}, [&]() {
+    sim.register_lambda(duration_t{100e-6}, [&]() {
         gen.update();
         notch_input = voltage_pu_t{gen.get_signal_abc().a()};
         notch_output = notch.update(notch_input);
     });
 
-    notch_sim.register_signal("input", [&]() { return notch_input.value(); });
-    notch_sim.register_signal("output", [&]() { return notch_output.value(); });
+    sim.register_signal("input", [&]() { return notch_input.value(); });
+    sim.register_signal("output", [&]() { return notch_output.value(); });
 
-    // At 100Hz, output should be heavily attenuated
-    notch_sim.register_assertion(make_range_assert<voltage_pu_t>(
+    // Assertion: At 100Hz notch, output should be heavily attenuated (< 0.1 pu)
+    sim.register_assertion(make_range_assert<voltage_pu_t>(
         "notch_attenuation", [&]() { return notch_output; }, voltage_pu_t{-0.1f}, voltage_pu_t{0.1f},
         time_range(duration_t{0.1}, duration_t{0.2})));
 
-    notch_sim.initialize();
-    gtest_exporter exporter(notch_sim);
-    notch_sim.simulate_for(duration_t(0.2));
+    sim.initialize();
+    sim.simulate_for(duration_t(0.2));
 }
 
 }  // namespace

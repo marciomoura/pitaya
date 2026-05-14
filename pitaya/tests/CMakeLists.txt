@@ -39,6 +39,10 @@ if(PITAYA_ENABLE_SIMULATION)
                 simulation/first_order_low_pass_filter_sim_test.cpp
                 simulation/second_order_filter_sim_test.cpp
                 simulation/srf_pll_sim_test.cpp
+                simulation/pi_controller_sim_test.cpp
+                simulation/dual_sogi_srf_pll_sim_test.cpp
+                simulation/threshold_protection_sim_test.cpp
+                simulation/timing_logic_sim_test.cpp
     )
 
     target_link_libraries(pitaya_tests PRIVATE pitaya::simulation)

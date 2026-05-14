@@ -129,4 +129,16 @@ duration_t simulator::get_current_simulation_time() const
 
 double simulator::get_current_simulation_time_seconds() const { return get_current_simulation_time().value(); }
 
+void simulator::on_destruction(std::function<void(const simulator&)> hook)
+{
+    _on_destruction_hooks.push_back(std::move(hook));
+}
+
+simulator::~simulator()
+{
+    for (const auto& hook : _on_destruction_hooks) {
+        hook(*this);
+    }
+}
+
 }  // namespace pitaya

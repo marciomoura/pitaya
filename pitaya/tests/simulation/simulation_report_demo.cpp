@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "pitaya/simulation/gtest_data_exporter.hpp"
+#include "pitaya/simulation/gtest_simulator.hpp"
 #include "pitaya/simulation/simulator.hpp"
 
 namespace {
@@ -12,7 +13,7 @@ using namespace std::chrono_literals;
 
 TEST(SimulationReportDemo, SineCosine)
 {
-    simulator sim;
+    simulator sim = make_gtest_simulator();
 
     // Register a dummy task to set the base simulation rate (e.g., 100us)
     sim.register_lambda(duration_t(100e-6), []() {});
@@ -47,9 +48,6 @@ TEST(SimulationReportDemo, SineCosine)
     });
 
     sim.initialize();
-
-    // Use gtest_exporter to automatically save data to SimulationReportDemo_SineCosine.csv
-    gtest_exporter exporter(sim);
 
     // Simulate for 40ms (2 cycles at 50Hz)
     sim.simulate_for(duration_t(0.04));

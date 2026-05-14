@@ -15,6 +15,7 @@ namespace pitaya {
 class simulator {
 public:
     simulator();
+    ~simulator();
 
     /// Register a task with the simulation.
     void register_task(std::shared_ptr<simulation_task> task);
@@ -81,9 +82,19 @@ public:
     /// Get the current simulation time in seconds.
     double get_current_simulation_time_seconds() const;
 
+    /// Register a hook to be called when the simulator is destroyed.
+    void on_destruction(std::function<void(const simulator&)> hook);
+
     const data_logger& get_logger() const { return _logger; }
 
+    simulator(simulator&&) noexcept = default;
+    simulator& operator=(simulator&&) noexcept = default;
+
 private:
+    // Disable copying
+    simulator(const simulator&) = delete;
+    simulator& operator=(const simulator&) = delete;
+
     /// Advance the simulation by a single step.
     void run_step();
 
@@ -91,6 +102,7 @@ private:
     data_logger _logger;
     std::vector<std::unique_ptr<simulation_assertion>> _assertions;
     std::function<void(const std::string&)> _on_assertion_failure;
+    std::vector<std::function<void(const simulator&)>> _on_destruction_hooks;
     std::size_t _current_tick{0};
 
     duration_t _logging_period{0.0};
