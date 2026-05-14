@@ -82,10 +82,10 @@ private:
 
 /// Metadata for a signal used for plotting and reporting.
 struct plot_metadata {
-    std::string name;
-    std::string group = "General";
-    uint32_t row = 0;  // 0 = auto-arrange
-    uint32_t col = 0;  // 0 = auto-arrange
+    std::string name;               ///< Unique name of the signal
+    std::string group = "General";  ///< Group name for UI organization
+    uint32_t row = 0;               ///< Target row in the report (0 = auto)
+    uint32_t col = 0;               ///< Target column in the report (0 = auto)
 };
 
 /// Represents a single data point or vector to be logged.

@@ -16,8 +16,8 @@ public:
 
     /// Structure to group tasks that run at the same rate.
     struct task_group {
-        std::size_t normalized_ticks{};
-        std::vector<std::shared_ptr<simulation_task>> tasks{};
+        std::size_t normalized_ticks{};                         ///< Period of this group in base ticks
+        std::vector<std::shared_ptr<simulation_task>> tasks{};  ///< Tasks belonging to this rate group
     };
 
     /// Register a task with the scheduler.

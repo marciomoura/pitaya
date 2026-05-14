@@ -11,15 +11,13 @@
 
 namespace pitaya {
 
-/**
- * @brief Helper function to automatically export simulator data using the active Google Test name.
- *
- * Extracts the test suite and test case name from Google Test and saves the
- * simulation data to a CSV file named `<TestSuite>_<TestCase>.csv`.
- *
- * @param sim The simulator containing the logged data.
- * @param output_directory Directory where the file will be saved.
- */
+/// Helper function to automatically export simulator data using the active Google Test name.
+///
+/// Extracts the test suite and test case name from Google Test and saves the
+/// simulation data to a CSV file named `<TestSuite>_<TestCase>.csv`.
+///
+/// @param sim The simulator containing the logged data.
+/// @param output_directory Directory where the file will be saved.
 inline void export_to_csv_gtest(const simulator& sim, const std::filesystem::path& output_directory = ".")
 {
     const auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
@@ -38,12 +36,10 @@ inline void export_to_csv_gtest(const simulator& sim, const std::filesystem::pat
     export_to_csv(sim, export_path);
 }
 
-/**
- * @brief RAII utility that automatically exports data when the test scope ends.
- *
- * This can be instantiated in a GTest fixture's TearDown() or directly in a TEST_F.
- * It ensures the simulation data is exported even if the test fails or exits early.
- */
+/// RAII utility that automatically exports data when the test scope ends.
+///
+/// This can be instantiated in a GTest fixture's TearDown() or directly in a TEST_F.
+/// It ensures the simulation data is exported even if the test fails or exits early.
 class gtest_exporter {
 public:
     explicit gtest_exporter(const simulator& sim, std::filesystem::path output_directory = ".")
