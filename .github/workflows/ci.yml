@@ -98,6 +98,29 @@ jobs:
           echo "=== Running Unit Tests with ${{ matrix.compiler }} ==="
           ./build/bin/pitaya_tests --gtest_color=yes
 
+  # Job 3: Documentation
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache APT packages
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+        with:
+          packages: doxygen graphviz
+          version: 1.0
+
+      - name: Generate Documentation
+        run: doxygen Doxyfile
+
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: pitaya-docs
+          path: docs/html
+          retention-days: 7
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
