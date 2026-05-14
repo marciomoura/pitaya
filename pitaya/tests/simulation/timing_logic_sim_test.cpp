@@ -80,22 +80,22 @@ TEST_F(TimingLogicSimTest, TimingDiagrams)
 {
     // Assertions
     // 1. Noise immunity: Debouncer must ignore 10ms toggling (needs 50ms stable)
-    sim.register_assertion(make_lambda_assert(
-        "noise_immunity",
-        [this]() {
-            return !debouncer.get_output() ? assertion_result::pass()
-                                           : assertion_result::fail("Debouncer triggered on noise");
-        },
-        time_range(duration_t{0.1}, duration_t{0.25})));
+    sim.register_assertion(make_lambda_assert({.name = "noise_immunity",
+        .func =
+            [this]() {
+                return !debouncer.get_output() ? assertion_result::pass()
+                                               : assertion_result::fail("Debouncer triggered on noise");
+            },
+        .strategy = time_range({.start = duration_t{0.1}, .end = duration_t{0.25}})}));
 
     // 2. Correct on-delay: Must be ON during stable high period
-    sim.register_assertion(make_lambda_assert(
-        "debouncer_on",
-        [this]() {
-            return debouncer.get_output() ? assertion_result::pass()
-                                          : assertion_result::fail("Debouncer failed to turn ON");
-        },
-        time_range(duration_t{0.4}, duration_t{0.5})));
+    sim.register_assertion(make_lambda_assert({.name = "debouncer_on",
+        .func =
+            [this]() {
+                return debouncer.get_output() ? assertion_result::pass()
+                                              : assertion_result::fail("Debouncer failed to turn ON");
+            },
+        .strategy = time_range({.start = duration_t{0.4}, .end = duration_t{0.5}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.8));

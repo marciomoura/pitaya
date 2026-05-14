@@ -205,48 +205,102 @@ private:
 // Factory functions for easier creation
 inline std::unique_ptr<assertion_strategy> always_active() { return std::make_unique<always_active_strategy>(); }
 
-inline std::unique_ptr<assertion_strategy> time_range(duration_t start, duration_t end)
+struct time_range_config {
+    duration_t start{};
+    duration_t end{};
+};
+
+inline std::unique_ptr<assertion_strategy> time_range(const time_range_config& config)
 {
-    return std::make_unique<time_range_strategy>(start, end);
+    return std::make_unique<time_range_strategy>(config.start, config.end);
 }
 
-inline std::unique_ptr<assertion_strategy> at_time(duration_t time, duration_t tolerance = duration_t{0.0})
-{
-    return std::make_unique<at_time_strategy>(time, tolerance);
-}
+struct at_time_config {
+    duration_t time{};
+    duration_t tolerance{0.0};
+};
 
-template <typename T>
-inline std::unique_ptr<simulation_assertion> make_range_assert(
-    std::string name, std::function<T()> func, T min, T max, std::unique_ptr<assertion_strategy> strategy)
+inline std::unique_ptr<assertion_strategy> at_time(const at_time_config& config)
 {
-    return std::make_unique<range_assert<T>>(std::move(name), std::move(func), min, max, std::move(strategy));
-}
-
-template <typename T>
-inline std::unique_ptr<simulation_assertion> make_near_assert(
-    std::string name, std::function<T()> func, T expected, T epsilon, std::unique_ptr<assertion_strategy> strategy)
-{
-    return std::make_unique<near_assert<T>>(std::move(name), std::move(func), expected, epsilon, std::move(strategy));
+    return std::make_unique<at_time_strategy>(config.time, config.tolerance);
 }
 
 template <typename T>
-inline std::unique_ptr<simulation_assertion> make_max_assert(
-    std::string name, std::function<T()> func, T max, std::unique_ptr<assertion_strategy> strategy)
+struct range_assert_config {
+    std::string name;
+    std::function<T()> func;
+    T min;
+    T max;
+    std::unique_ptr<assertion_strategy> strategy;
+};
+
+template <typename T>
+inline std::unique_ptr<simulation_assertion> make_range_assert(range_assert_config<T> config)
 {
-    return std::make_unique<max_assert<T>>(std::move(name), std::move(func), max, std::move(strategy));
+    if (!config.strategy) config.strategy = always_active();
+    return std::make_unique<range_assert<T>>(
+        std::move(config.name), std::move(config.func), config.min, config.max, std::move(config.strategy));
 }
 
 template <typename T>
-inline std::unique_ptr<simulation_assertion> make_min_assert(
-    std::string name, std::function<T()> func, T min, std::unique_ptr<assertion_strategy> strategy)
+struct near_assert_config {
+    std::string name;
+    std::function<T()> func;
+    T expected;
+    T epsilon;
+    std::unique_ptr<assertion_strategy> strategy;
+};
+
+template <typename T>
+inline std::unique_ptr<simulation_assertion> make_near_assert(near_assert_config<T> config)
 {
-    return std::make_unique<min_assert<T>>(std::move(name), std::move(func), min, std::move(strategy));
+    if (!config.strategy) config.strategy = always_active();
+    return std::make_unique<near_assert<T>>(
+        std::move(config.name), std::move(config.func), config.expected, config.epsilon, std::move(config.strategy));
 }
 
-inline std::unique_ptr<simulation_assertion> make_lambda_assert(
-    std::string name, std::function<assertion_result()> func, std::unique_ptr<assertion_strategy> strategy)
+template <typename T>
+struct max_assert_config {
+    std::string name;
+    std::function<T()> func;
+    T max;
+    std::unique_ptr<assertion_strategy> strategy;
+};
+
+template <typename T>
+inline std::unique_ptr<simulation_assertion> make_max_assert(max_assert_config<T> config)
 {
-    return std::make_unique<lambda_assert>(std::move(name), std::move(func), std::move(strategy));
+    if (!config.strategy) config.strategy = always_active();
+    return std::make_unique<max_assert<T>>(
+        std::move(config.name), std::move(config.func), config.max, std::move(config.strategy));
+}
+
+template <typename T>
+struct min_assert_config {
+    std::string name;
+    std::function<T()> func;
+    T min;
+    std::unique_ptr<assertion_strategy> strategy;
+};
+
+template <typename T>
+inline std::unique_ptr<simulation_assertion> make_min_assert(min_assert_config<T> config)
+{
+    if (!config.strategy) config.strategy = always_active();
+    return std::make_unique<min_assert<T>>(
+        std::move(config.name), std::move(config.func), config.min, std::move(config.strategy));
+}
+
+struct lambda_assert_config {
+    std::string name;
+    std::function<assertion_result()> func;
+    std::unique_ptr<assertion_strategy> strategy;
+};
+
+inline std::unique_ptr<simulation_assertion> make_lambda_assert(lambda_assert_config config)
+{
+    if (!config.strategy) config.strategy = always_active();
+    return std::make_unique<lambda_assert>(std::move(config.name), std::move(config.func), std::move(config.strategy));
 }
 
 }  // namespace pitaya

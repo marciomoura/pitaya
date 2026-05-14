@@ -40,7 +40,7 @@ protected:
 
             // Scenario 2: Frequency Step 50Hz -> 55Hz at t=0.8s
             if (current_time >= 0.8 && current_time < 0.8001) {
-                gen.set_frequency_step(5.0f, static_cast<float>(current_time));
+                gen.set_frequency_step({.time = static_cast<float>(current_time), .value = 5.0f});
             }
 
             gen.update();
@@ -79,19 +79,25 @@ TEST_F(DualSogiSrfPllSimTest, RobustnessSimulation)
 {
     // Assertions
     // 1. Initial lock at 50Hz
-    sim.register_assertion(make_near_assert<float>(
-        "initial_lock", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.5f,
-        time_range(duration_t{0.2}, duration_t{0.3})));
+    sim.register_assertion(make_near_assert<float>({.name = "initial_lock",
+        .func = [this]() { return pll.get_estimated_frequency().value(); },
+        .expected = 50.0f,
+        .epsilon = 0.5f,
+        .strategy = time_range({.start = duration_t{0.2}, .end = duration_t{0.3}})}));
 
     // 2. Unbalance robustness (should stay at 50Hz despite negative sequence)
-    sim.register_assertion(make_near_assert<float>(
-        "unbalance_robustness", [this]() { return pll.get_estimated_frequency().value(); }, 50.0f, 0.5f,
-        time_range(duration_t{0.5}, duration_t{0.7})));
+    sim.register_assertion(make_near_assert<float>({.name = "unbalance_robustness",
+        .func = [this]() { return pll.get_estimated_frequency().value(); },
+        .expected = 50.0f,
+        .epsilon = 0.5f,
+        .strategy = time_range({.start = duration_t{0.5}, .end = duration_t{0.7}})}));
 
     // 3. Frequency step tracking (should follow to 55Hz)
-    sim.register_assertion(make_near_assert<float>(
-        "frequency_step_tracking", [this]() { return pll.get_estimated_frequency().value(); }, 55.0f, 0.5f,
-        time_range(duration_t{1.2}, duration_t{1.3})));
+    sim.register_assertion(make_near_assert<float>({.name = "frequency_step_tracking",
+        .func = [this]() { return pll.get_estimated_frequency().value(); },
+        .expected = 55.0f,
+        .epsilon = 0.5f,
+        .strategy = time_range({.start = duration_t{1.2}, .end = duration_t{1.3}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(1.5));

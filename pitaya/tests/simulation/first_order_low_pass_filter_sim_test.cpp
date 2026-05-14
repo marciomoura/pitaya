@@ -54,21 +54,27 @@ TEST_F(FirstOrderLowPassFilterSimTest, StepResponse)
 
     // Assertions
     // 1. Initial zero state before step at 0.05s
-    sim.register_assertion(make_near_assert<voltage_pu_t>(
-        "initial_zero", [this]() { return output; }, voltage_pu_t{0.0f}, voltage_pu_t{1e-3f},
-        time_range(duration_t{0.0}, duration_t{0.045})));
+    sim.register_assertion(make_near_assert<voltage_pu_t>({.name = "initial_zero",
+        .func = [this]() { return output; },
+        .expected = voltage_pu_t{0.0f},
+        .epsilon = voltage_pu_t{1e-3f},
+        .strategy = time_range({.start = duration_t{0.0}, .end = duration_t{0.045}})}));
 
     // 2. Steady state after approx 5-10 Tau
-    sim.register_assertion(make_near_assert<voltage_pu_t>(
-        "steady_state", [this]() { return output; }, voltage_pu_t{1.0f}, voltage_pu_t{0.02f},
-        time_range(duration_t{0.4}, duration_t{0.5})));
+    sim.register_assertion(make_near_assert<voltage_pu_t>({.name = "steady_state",
+        .func = [this]() { return output; },
+        .expected = voltage_pu_t{1.0f},
+        .epsilon = voltage_pu_t{0.02f},
+        .strategy = time_range({.start = duration_t{0.4}, .end = duration_t{0.5}})}));
 
     // 3. Time constant (Tau) verification
     // Cutoff = 10Hz -> Tau = 1/(2*pi*10) approx 0.0159s.
     // At t = 0.05 + 0.0159 = 0.0659, output should be approx 0.632
-    sim.register_assertion(make_near_assert<voltage_pu_t>(
-        "one_tau", [this]() { return output; }, voltage_pu_t{0.632f}, voltage_pu_t{0.05f},
-        at_time(duration_t{0.0659}, duration_t{100e-6})));
+    sim.register_assertion(make_near_assert<voltage_pu_t>({.name = "one_tau",
+        .func = [this]() { return output; },
+        .expected = voltage_pu_t{0.632f},
+        .epsilon = voltage_pu_t{0.05f},
+        .strategy = at_time({.time = duration_t{0.0659}, .tolerance = duration_t{100e-6}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.5));
@@ -97,9 +103,11 @@ TEST_F(FirstOrderLowPassFilterSimTest, NoiseRejection)
     sim.register_signal("output", [&]() { return filtered_output.value(); });
 
     // Assertion: Filtered output should be much smoother than input (within 15% band)
-    sim.register_assertion(make_range_assert<voltage_pu_t>(
-        "noise_rejection", [&]() { return filtered_output; }, voltage_pu_t{0.85f}, voltage_pu_t{1.15f},
-        time_range(duration_t{0.5}, duration_t{1.0})));
+    sim.register_assertion(make_range_assert<voltage_pu_t>({.name = "noise_rejection",
+        .func = [&]() { return filtered_output; },
+        .min = voltage_pu_t{0.85f},
+        .max = voltage_pu_t{1.15f},
+        .strategy = time_range({.start = duration_t{0.5}, .end = duration_t{1.0}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(1.0));
@@ -140,9 +148,11 @@ TEST_F(FirstOrderLowPassFilterFrequencyTest, CutoffAttenuation)
     gen.set_signal_frequency(50.0f);
 
     // Assertion: At 50Hz cutoff, peak magnitude should be around 0.707
-    sim.register_assertion(make_range_assert<voltage_pu_t>(
-        "magnitude_at_cutoff", [this]() { return output; }, voltage_pu_t{-0.75f}, voltage_pu_t{0.75f},
-        time_range(duration_t{0.1}, duration_t{0.2})));
+    sim.register_assertion(make_range_assert<voltage_pu_t>({.name = "magnitude_at_cutoff",
+        .func = [this]() { return output; },
+        .min = voltage_pu_t{-0.75f},
+        .max = voltage_pu_t{0.75f},
+        .strategy = time_range({.start = duration_t{0.1}, .end = duration_t{0.2}})}));
 
     sim.initialize();
     sim.simulate_for(duration_t(0.2));
