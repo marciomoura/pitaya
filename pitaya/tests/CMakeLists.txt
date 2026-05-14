@@ -30,9 +30,15 @@ add_executable(
 if(PITAYA_ENABLE_SIMULATION)
     target_sources(
         pitaya_tests
-        PRIVATE simulation/simulation_test.cpp simulation/simulation_task_test.cpp simulation/data_logger_test.cpp
-                simulation/task_scheduler_test.cpp simulation/data_exporter_test.cpp
+        PRIVATE simulation/simulation_test.cpp
+                simulation/simulation_task_test.cpp
+                simulation/data_logger_test.cpp
+                simulation/task_scheduler_test.cpp
+                simulation/data_exporter_test.cpp
                 simulation/simulation_report_demo.cpp
+                simulation/first_order_low_pass_filter_sim_test.cpp
+                simulation/second_order_filter_sim_test.cpp
+                simulation/srf_pll_sim_test.cpp
     )
 
     target_link_libraries(pitaya_tests PRIVATE pitaya::simulation)
