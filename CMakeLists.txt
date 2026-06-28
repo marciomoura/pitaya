@@ -82,4 +82,10 @@ if(PITAYA_BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pitaya/tests")
     add_subdirectory(pitaya/tests)
 endif()
 
+# Applications
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/applications")
+    message(STATUS "Applications enabled")
+    add_subdirectory(applications)
+endif()
+
 message(STATUS "Pitaya configuration complete")
